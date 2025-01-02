@@ -100,15 +100,6 @@ int main(void) {
 	printf("%s", key_address->xpub);
 	printf("Address length: %lu", strlen(key_address->xpriv));
 	
-	/*printf("\nPrinting master private key address: \n");
-	for (uint32_t i = 0; i < 112; i++) {
-		printf("%c", key_address->xpriv[i]);
-	}
-	printf("\nPrinting master public key address: \n");
-	for (uint32_t i = 0; i < 112; i++) {
-		printf("%c", key_address->xpub[i]);
-		}*/
-	
 	gcry_free(key_address);
 	gcry_free(child_keypair);
 	gcry_free(mnem);
