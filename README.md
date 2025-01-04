@@ -1,5 +1,5 @@
 # wall_e_t
-Tools to develop Bitcoin wallets in C
+Tools to develop Bitcoin wallets in C (ONGOING/This shoulds be finished by Spring if no surprises)
 
 # Acknowledgments & Dependencies
 This software package is built upon the shoulders of the [libgcrypt library](https://www.gnupg.org/software/libgcrypt/index.html), all honour and glory to those developers.
