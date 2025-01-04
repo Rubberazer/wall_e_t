@@ -17,9 +17,9 @@
 
 #include <termios.h>
 #include <stdio_ext.h>
-include <wall_e_t.h>
+#include <wall_e_t.h>
 
-int32_t getpasswd(char * passwd) {
+int32_t getpasswd(char *passwd) {
 	int32_t err = 0; 
 	struct termios term, term_old;
 	
