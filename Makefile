@@ -1,6 +1,6 @@
 CC=gcc
-FILES=wall_e_t_crypt.c main.c
-TEST_FILES=wall_e_t_crypt.c test.c
+FILES=wall_e_t_crypto.c wall_e_t_user.c main.c
+TEST_FILES=wall_e_t_crypto.c test.c
 TARGET=wall_e_t
 TEST_TARGET=test
 CFLAGS=-Wall -Werror
