@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <stdio.h>
 #include <wall_e_t.h>
 
 int main(void) {
