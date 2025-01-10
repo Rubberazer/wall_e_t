@@ -184,7 +184,7 @@ extern "C" {
 		wBIP44,
 		wBIP84
 	} BIP_t;
-		
+	
     /* Initializing libgcrypt */
 	gcry_error_t libgcrypt_initializer(void);
 
