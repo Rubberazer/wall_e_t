@@ -125,7 +125,7 @@ allocerr1:
 	return err;
 }			   
 
-gcry_error_t base58_encode(char *base58, uint8_t *key, size_t uint8_length, size_t char_length) {
+gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
 	#define STRING_SWAP 200
 	static gcry_error_t err = GPG_ERR_NO_ERROR;
 	gcry_mpi_t mpi_base58 = NULL;
@@ -726,7 +726,7 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 	memcpy(intermediate_key+INTER_KEY, checksum, CHECKSUM);
 	
 	// Here private address
-	err = base58_encode(keys_address->xpriv, intermediate_key, INTER_KEY+CHECKSUM, sizeof(keys_address->xpriv)/sizeof(char));
+	err = base58_encode(keys_address->xpriv, sizeof(keys_address->xpriv)/sizeof(char), intermediate_key, INTER_KEY+CHECKSUM);
 	if (err) {
 		fprintf(stderr, "Failed to convert intermediate priv key to address format\n");
 		goto allocerr4;
@@ -746,7 +746,7 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 	memcpy(intermediate_key+INTER_KEY, checksum, CHECKSUM);
 	
 	// Here public address	
-	err = base58_encode(keys_address->xpub, intermediate_key, INTER_KEY+CHECKSUM, sizeof(keys_address->xpub)/sizeof(char));
+	err = base58_encode(keys_address->xpub, sizeof(keys_address->xpub)/sizeof(char), intermediate_key, INTER_KEY+CHECKSUM);
 	if (err) {
 		fprintf(stderr, "Failed to convert intermediate pub key to address format\n");
 		goto allocerr4;
@@ -756,6 +756,82 @@ allocerr4:
 	gcry_free(checksum);
 allocerr3:
 	gcry_free(hash160);	
+allocerr2:
+	gcry_free(intermediate_key);	
+allocerr1:
+	return err;
+}
+
+gcry_error_t bech32_encode(char *bech32, size_t char_length, uint8_t *key, size_t uint8_length){
+	static gcry_error_t err = GPG_ERR_NO_ERROR;
+	uint8_t *intermediate_key = NULL;
+	uint8_t *intermediate_hash = NULL;
+	uint64_t *s_swap = NULL;
+	uint8_t *checksum = NULL;
+	//char fiver[] = BECH32;
+	
+	const uint32_t intermediate_key_len = ((HASH160_LENGTH*8)%5) ? (HASH160_LENGTH*8/5)+8 : (HASH160_LENGTH*8/5)+7;
+	
+	intermediate_key = (uint8_t *)gcry_calloc_secure(intermediate_key_len, sizeof(uint8_t));
+	if (intermediate_key == NULL) {
+		err = gcry_error_from_errno(ENOMEM);
+		goto allocerr1;
+	}
+	intermediate_hash = (uint8_t *)gcry_calloc_secure(HASH160_LENGTH, sizeof(uint8_t));
+	if (intermediate_hash == NULL) {
+		err = gcry_error_from_errno(ENOMEM);
+		goto allocerr2;
+	}
+	s_swap = (uint64_t *)gcry_calloc_secure(1, sizeof(uint64_t));
+	if (s_swap == NULL) {
+		err = gcry_error_from_errno(ENOMEM);
+		goto allocerr3;
+	}
+	checksum = (uint8_t *)gcry_calloc_secure(32, sizeof(uint8_t));
+	if (checksum == NULL) {
+		err = gcry_error_from_errno(ENOMEM);
+		goto allocerr4;
+	}	
+	
+	err = hash_to_hash160(intermediate_hash, key, uint8_length);
+
+	intermediate_key[0] = 0x00;
+	for (int32_t i = 0, j = 0, k = 1; k < intermediate_key_len; j++, k++) {
+		memcpy(s_swap, intermediate_hash+i, sizeof(uint64_t));
+		*s_swap = ((*s_swap << 56) & 0xff00000000000000) | ((*s_swap << 40) & 0x00ff000000000000) | ((*s_swap << 24) & 0x0000ff0000000000) | ((*s_swap << 8) & 0x000000ff00000000) |
+			((*s_swap >> 8) & 0x00000000ff000000) | ((*s_swap >> 24) & 0x0000000000ff0000) | ((*s_swap >>40) & 0x000000000000ff00) | ((*s_swap >> 56) & 0x00000000000000ff);
+		*s_swap = *s_swap >> (59-(5*j));
+		*s_swap = *s_swap & 0x1f;
+		intermediate_key[k] = *s_swap;
+		if (!((j+1)%8)) {
+			i += 5;
+			j = -1;
+		}
+		if (i > 15) break;
+	}
+
+	
+	
+	printf("\nPrinting intermediate hash bech32 : \n");
+	for (uint32_t i = 0; i < HASH160_LENGTH; i++) {
+		printf("%02x", intermediate_hash[i]);
+	}
+	printf("\nPrinting intermediate bech32 : \n");
+	for (uint32_t i = 0; i < intermediate_key_len; i++) {
+		printf("%02x", intermediate_key[i]);
+	}
+
+	printf("\nPrinting intermediate bech32 checksum: \n");
+	for (uint32_t i = 0; i < 32; i++) {
+		printf("%02x", checksum[i]);
+	}
+	
+	
+	gcry_free(checksum);
+allocerr4:
+	gcry_free(s_swap);
+allocerr3:
+	gcry_free(intermediate_hash);	
 allocerr2:
 	gcry_free(intermediate_key);	
 allocerr1:

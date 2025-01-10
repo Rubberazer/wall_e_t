@@ -203,14 +203,17 @@ extern "C" {
 	/* Key derivation from master keys */
 	gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, size_t key_index, hardened_t hardened);
 
-	/* HASH160 convert function */
+	/* HASH160 of an array of uint8 */
 	gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length);
 	
 	/* Key address format from hex, if par_pub is NULL and depth is 0 a master key is assumed */
 	gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, BIP_t wallet_type);
 
 	/* Base58 of an array of uint8 */
-	gcry_error_t base58_encode(char *base58, uint8_t *key, size_t uint8_length, size_t char_length);
+	gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length);
+
+	/* Bech32 of an array of uint8 */
+	gcry_error_t bech32_encode(char *bech32, size_t char_length, uint8_t *key, size_t uint8_length);
 
 	/* Getting passwords from user on terminal */
 	int32_t getpasswd(char * passwd);

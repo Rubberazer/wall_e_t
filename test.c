@@ -23,7 +23,8 @@ int main(void) {
 	mnemonic_t *mnem = NULL;
    	key_pair_t *child_keypair = NULL;
 	key_address_t *key_address = NULL;
-			
+	char *bech32_address = NULL; 
+	
 	if (!libgcrypt_initializer()) {
 		exit(EXIT_FAILURE);
 	}
@@ -35,6 +36,9 @@ int main(void) {
 	if (child_keypair == NULL)
 		exit(EXIT_FAILURE);
 	key_address = (key_address_t *)gcry_calloc_secure(1, sizeof(key_address_t));
+	if (key_address == NULL)
+		exit(EXIT_FAILURE);
+	bech32_address  = (char *)gcry_calloc_secure(64, sizeof(char));
 	if (key_address == NULL)
 		exit(EXIT_FAILURE);
 	
@@ -100,7 +104,13 @@ int main(void) {
 	printf("\nPrinting master private key address: \n");
 	printf("%s", key_address->xpub);
 	printf("Address length: %lu", strlen(key_address->xpriv));
-	
+
+	err = bech32_encode(bech32_address, 64, child_keypair->key_pub_comp, 33);
+	if (err) {
+		printf("Problem creating address from public key, error code:%d", err);
+	}
+
+	gcry_free(bech32_address);
 	gcry_free(key_address);
 	gcry_free(child_keypair);
 	gcry_free(mnem);
