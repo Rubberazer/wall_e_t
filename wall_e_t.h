@@ -178,7 +178,7 @@ extern "C" {
 		recev,
 		change
 	} change_t;
-
+	
 	typedef enum {
 		wBIP32,
 		wBIP44,
