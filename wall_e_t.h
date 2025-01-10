@@ -215,7 +215,7 @@ extern "C" {
 	/* Bech32 of an array of uint8 */
 	gcry_error_t bech32_encode(char *bech32, size_t char_length, uint8_t *key, size_t uint8_length);
 
-	/* Getting passwords from user on terminal */
+    /* Getting passwords from user on terminal */
 	int32_t getpasswd(char * passwd);
 
 #ifdef __cplusplus
