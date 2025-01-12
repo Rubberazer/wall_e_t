@@ -16,6 +16,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <wall_e_t.h>
 
 int main(void) {
@@ -26,90 +28,92 @@ int main(void) {
     char *bech32_address = NULL; 
 	
     if (!libgcrypt_initializer()) {
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
     }
 
     mnem = (mnemonic_t *)gcry_calloc_secure(1, sizeof(mnemonic_t));
     if (mnem == NULL)
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
     child_keypair = (key_pair_t *)gcry_calloc_secure(1, sizeof(key_pair_t));
     if (child_keypair == NULL)
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
     key_address = (key_address_t *)gcry_calloc_secure(1, sizeof(key_address_t));
     if (key_address == NULL)
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
     bech32_address  = (char *)gcry_calloc_secure(64, sizeof(char));
     if (key_address == NULL)
-	exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	
     err = create_mnemonic("dasdasds", 24, mnem);
     if (err) {
-	printf("Problem creating mnemonic, error code:%d", err);
+		printf("Problem creating mnemonic, error code:%d", err);
     }
 
     printf("\nMnemonic list: %s\n", mnem->mnemonic);
     printf("Printing seed: \n");
     for (uint32_t i = 0; i < 64; i++) {
-	printf("%02x",mnem->seed[i]);
+		printf("%02x",mnem->seed[i]);
     }
     printf("\nPrinting master key+chain code: \n");
     for (uint32_t i = 0; i < 64; i++) {
-	printf("%02x",mnem->keys.key_priv_chain[i]);
+		printf("%02x",mnem->keys.key_priv_chain[i]);
     }	
     printf("\nPrinting master key: \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x",mnem->keys.key_priv[i]);
+		printf("%02x",mnem->keys.key_priv[i]);
     }
     printf("\nPrinting master chain code: \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x",mnem->keys.chain_code[i]);
+		printf("%02x",mnem->keys.chain_code[i]);
     }
     printf("\nPrinting uncompressed public key: \n");
     for (uint32_t i = 0; i < 65; i++) {
-	printf("%02x",mnem->keys.key_pub[i]);
+		printf("%02x",mnem->keys.key_pub[i]);
     }	
     printf("\nPrinting compressed public key: \n");
     for (uint32_t i = 0; i < 33; i++) {
-	printf("%02x",mnem->keys.key_pub_comp[i]);
+		printf("%02x",mnem->keys.key_pub_comp[i]);
     }
 	
     err = key_deriv(child_keypair, mnem->keys.key_priv, mnem->keys.chain_code, 0, hardened_child);
     if (err) {
-	printf("Problem deriving child key, error code:%d", err);
+		printf("Problem deriving child key, error code:%d", err);
     }	
 
     printf("\nPrinting derived child chain code: \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x", child_keypair->chain_code[i]);
+		printf("%02x", child_keypair->chain_code[i]);
     }
 
     printf("\nPrinting derived child private key : \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x", child_keypair->key_priv[i]);
+		printf("%02x", child_keypair->key_priv[i]);
     }
 
     printf("\nPrinting derived child compressed public key : \n");
     for (uint32_t i = 0; i < 33; i++) {
-	printf("%02x", child_keypair->key_pub_comp[i]);
+		printf("%02x", child_keypair->key_pub_comp[i]);
     }
 
     err = ext_keys_address(key_address, &mnem->keys, NULL, 0, wBIP84);
     if (err) {
-	printf("Problem creating address from keys, error code:%d", err);
+		printf("Problem creating address from keys, error code:%d", err);
     }
 
     printf("\nPrinting master private key address: \n");
     printf("%s", key_address->xpriv);
-    printf("Address length: %lu", strlen(key_address->xpriv));
+    printf("\tAddress length: %lu", strlen(key_address->xpriv));
     printf("\nPrinting master private key address: \n");
     printf("%s", key_address->xpub);
-    printf("Address length: %lu", strlen(key_address->xpriv));
+    printf("\tAddress length: %lu", strlen(key_address->xpriv));
 
-    err = bech32_encode(bech32_address, 64, child_keypair->key_pub_comp, 33);
+    err = bech32_encode(bech32_address, 64, child_keypair->key_pub_comp, 33, bech32);
     if (err) {
-	printf("Problem creating address from public key, error code:%d", err);
+		printf("Problem creating address from public key, error code:%d", err);
     }
 
+	printf("\nBech32 address of children public key:\n%s", bech32_address);
+	
     gcry_free(bech32_address);
     gcry_free(key_address);
     gcry_free(child_keypair);

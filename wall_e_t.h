@@ -44,15 +44,15 @@
 #define BECH32 "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
 #define WORDLIST "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", \
 	"across", "act", "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit", "adult", "advance", "advice", "aerobic", "affair", "afford", "afraid", "again", \
-	"age", "agent", "agree", "ahead", "aim", "air", "airport", "aisle", "alarm", "album", "alcohol", "alert", "alien", "all", "alley", "allow", "almost", "alone", "alpha", "already", "also", "alter", \
+	"age", "agent", "agree", "ahead", "aim", "air", "airport", "aisle", "alarm", "album", "alcohol", "alert", "alien", "all", "alley", "allow", "almost", "alone", "alpha", "already", "also", "alter",\
 	"always", "amateur", "amazing", "among", "amount", "amused", "analyst", "anchor", "ancient", "anger", "angle", "angry", "animal", "ankle", "announce", "annual", "another", "answer", "antenna", \
-	"antique", "anxiety", "any", "apart", "apology", "appear", "apple", "approve", "april", "arch", "arctic", "area", "arena", "argue", "arm", "armed", "armor", "army", "around", "arrange", "arrest", \
+	"antique", "anxiety", "any", "apart", "apology", "appear", "apple", "approve", "april", "arch", "arctic", "area", "arena", "argue", "arm", "armed", "armor", "army", "around", "arrange", "arrest",\
 	"arrive", "arrow", "art", "artefact", "artist", "artwork", "ask", "aspect", "assault", "asset", "assist", "assume", "asthma", "athlete", "atom", "attack", "attend", "attitude", "attract", \
 	"auction", "audit", "august", "aunt", "author", "auto", "autumn", "average", "avocado", "avoid", "awake", "aware", "away", "awesome", "awful", "awkward", "axis", "baby", "bachelor", "bacon", \
 	"badge", "bag", "balance", "balcony", "ball", "bamboo", "banana", "banner", "bar", "barely", "bargain", "barrel", "base", "basic", "basket", "battle", "beach", "bean", "beauty", "because", \
 	"become", "beef", "before", "begin", "behave", "behind", "believe", "below", "belt", "bench", "benefit", "best", "betray", "better", "between", "beyond", "bicycle", "bid", "bike", "bind", \
 	"biology", "bird", "birth", "bitter", "black", "blade", "blame", "blanket", "blast", "bleak", "bless", "blind", "blood", "blossom", "blouse", "blue", "blur", "blush", "board", "boat", "body", \
-	"boil","bomb", "bone", "bonus", "book", "boost", "border", "boring", "borrow", "boss", "bottom", "bounce", "box", "boy", "bracket", "brain", "brand", "brass", "brave", "bread", "breeze", "brick", \
+	"boil","bomb", "bone", "bonus", "book", "boost", "border", "boring", "borrow", "boss", "bottom", "bounce", "box", "boy", "bracket", "brain", "brand", "brass", "brave", "bread", "breeze", "brick",\
 	"bridge", "brief", "bright", "bring", "brisk", "broccoli", "broken", "bronze", "broom", "brother", "brown", "brush", "bubble", "buddy", "budget", "buffalo", "build", "bulb", "bulk", "bullet", \
 	"bundle", "bunker", "burden", "burger", "burst", "bus", "business", "busy", "butter", "buyer", "buzz", "cabbage", "cabin", "cable", "cactus", "cage", "cake", "call", "calm", "camera", "camp", \
 	"can", "canal", "cancel", "candy", "cannon", "canoe", "canvas", "canyon", "capable", "capital", "captain", "car", "carbon", "card", "cargo", "carpet", "carry", "cart", "case", "cash", "casino", \
@@ -118,7 +118,7 @@
 	"reopen", "repair", "repeat", "replace", "report", "require", "rescue", "resemble", "resist", "resource", "response", "result", "retire", "retreat", "return", "reunion", "reveal", "review", \
 	"reward", "rhythm", "rib", "ribbon", "rice", "rich", "ride", "ridge", "rifle", "right", "rigid", "ring", "riot", "ripple", "risk", "ritual", "rival", "river", "road", "roast", "robot", \
 	"robust", "rocket", "romance", "roof", "rookie", "room", "rose", "rotate", "rough", "round", "route", "royal", "rubber", "rude", "rug", "rule", "run", "runway", "rural", "sad", "saddle", \
-	"sadness", "safe", "sail", "salad", "salmon", "salon", "salt", "salute", "same", "sample", "sand", "satisfy", "satoshi", "sauce", "sausage", "save", "say",	"scale", "scan", "scare", \
+	"sadness", "safe", "sail", "salad", "salmon", "salon", "salt", "salute", "same", "sample", "sand", "satisfy", "satoshi", "sauce", "sausage", "save", "say", "scale", "scan", "scare", \
 	"scatter", "scene", "scheme", "school", "science", "scissors", "scorpion", "scout", "scrap", "screen", "script", "scrub", "sea", "search", "season", "seat", "second", "secret", "section", \
 	"security", "seed", "seek", "segment", "select", "sell", "seminar", "senior", "sense", "sentence", "series", "service", "session", "settle", "setup", "seven", "shadow", "shaft", "shallow", \
 	"share", "shed", "shell", "sheriff", "shield", "shift", "shine", "ship", "shiver", "shock", "shoe", "shoot", "shop", "short", "shoulder", "shove", "shrimp", "shrug", "shuffle", "shy", \
@@ -128,7 +128,7 @@
 	"sorry", "sort", "soul", "sound", "soup", "source", "south", "space", "spare", "spatial", "spawn", "speak", "special", "speed", "spell", "spend", "sphere", "spice", "spider", "spike", "spin", \
 	"spirit", "split", "spoil", "sponsor", "spoon", "sport", "spot", "spray", "spread", "spring", "spy", "square", "squeeze", "squirrel", "stable", "stadium", "staff", "stage", "stairs", "stamp", \
 	"stand", "start", "state", "stay", "steak", "steel", "stem", "step", "stereo", "stick", "still", "sting", "stock", "stomach", "stone", "stool", "story", "stove", "strategy", "street", "strike", \
-	"strong", "struggle", "student", "stuff", "stumble", "style", "subject", "submit", "subway", "success", "such", "sudden", "suffer", "sugar", "suggest", "suit", "summer", "sun", "sunny", "sunset", \
+	"strong", "struggle", "student", "stuff", "stumble", "style", "subject", "submit", "subway", "success", "such", "sudden", "suffer", "sugar", "suggest", "suit", "summer", "sun", "sunny", "sunset",\
 	"super", "supply", "supreme", "sure", "surface", "surge", "surprise", "surround", "survey", "suspect", "sustain", "swallow", "swamp", "swap", "swarm", "swear", "sweet", "swift", "swim", "swing", \
 	"switch", "sword", "symbol", "symptom", "syrup", "system", "table", "tackle", "tag", "tail", "talent", "talk", "tank", "tape", "target", "task", "taste", "tattoo", "taxi", "teach", "team", \
 	"tell", "ten", "tenant", "tennis", "tent", "term", "test", "text", "thank", "that", "theme", "then", "theory", "there", "they", "thing", "this", "thought", "three", "thrive", "throw", "thumb", \
@@ -145,81 +145,82 @@
 	"wife", "wild", "will", "win", "window", "wine", "wing", "wink", "winner", "winter", "wire", "wisdom", "wise", "wish", "witness", "wolf", "woman", "wonder", "wood", "wool", "word", "work", \
 	"world", "worry", "worth", "wrap", "wreck", "wrestle", "wrist", "write", "wrong", "yard", "year", "yellow", "you", "young", "youth", "zebra", "zero", "zone", "zoo"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef struct {
+    uint8_t key_pub[PUBKEY_LENGTH+CHAINCODE_LENGTH];
+    uint8_t key_pub_comp[PUBKEY_LENGTH];
+    uint8_t key_priv[PRIVKEY_LENGTH];
+    uint8_t key_priv_chain[PRIVKEY_LENGTH+CHAINCODE_LENGTH];
+    uint8_t chain_code[CHAINCODE_LENGTH];
+    size_t key_index;
+} key_pair_t;
 
-    typedef struct {
-	uint8_t key_pub[PUBKEY_LENGTH+CHAINCODE_LENGTH];
-	uint8_t key_pub_comp[PUBKEY_LENGTH];
-	uint8_t key_priv[PRIVKEY_LENGTH];
-	uint8_t key_priv_chain[PRIVKEY_LENGTH+CHAINCODE_LENGTH];
-	uint8_t chain_code[CHAINCODE_LENGTH];
-	size_t key_index;
-    } key_pair_t;
+typedef struct {
+    char mnemonic[1000];
+    uint8_t seed[64];
+    key_pair_t keys;
+} mnemonic_t;
 
-    typedef struct {
-	char mnemonic[1000];
-	uint8_t seed[64];
-	key_pair_t keys;
-    } mnemonic_t;
+typedef struct {
+    char xpriv[200];
+    char xpub[200];
+} key_address_t;
 
-    typedef struct {
-	char xpriv[200];
-	char xpub[200];
-    } key_address_t;
+typedef enum {
+    normal_child,
+    hardened_child
+} hardened_t;
 
-    typedef enum {
-	normal_child,
-	hardened_child
-    } hardened_t;
-
-    typedef enum {
-	recev,
-	change
-    } change_t;
+typedef enum {
+    recev,
+    change
+} change_t;
 	
-    typedef enum {
-	wBIP32,
-	wBIP44,
-	wBIP84
-    } BIP_t;
+typedef enum {
+    wBIP32,
+    wBIP44,
+    wBIP84
+} BIP_t;
+
+typedef enum {
+	invalid,
+    bech32 = 1,
+    bech32m = 0x2bc830a3
+} encoding;
 	
-    /* Initializing libgcrypt */
-    gcry_error_t libgcrypt_initializer(void);
+/* Initializing libgcrypt */
+gcry_error_t libgcrypt_initializer(void);
 
-    /* Create seed + mnemonic + master keys and chain code for new wallet with salt */
-    gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem);
+/* Create seed + mnemonic + master keys and chain code for new wallet with salt */
+gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem);
 	
-    /* Public key from private one */
-    gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_key);
+/* Public key from private one */
+gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_key);
 
-    /* String to array of uint8 */
-    gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_length);
+/* String to array of uint8 */
+gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_length);
 
-    /* Array of uint8 to string */
-    gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_length);
+/* Array of uint8 to string */
+gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_length);
 	
-    /* Key derivation from master keys */
-    gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, size_t key_index, hardened_t hardened);
+/* Key derivation from master keys */
+gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, size_t key_index, hardened_t hardened);
 
-    /* HASH160 of an array of uint8 */
-    gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length);
+/* HASH160 of an array of uint8 */
+gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length);
 	
-    /* Key address format from hex, if par_pub is NULL and depth is 0 a master key is assumed */
-    gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, BIP_t wallet_type);
+/* Key address format from hex, if par_pub is NULL and depth is 0 a master key is assumed */
+gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, BIP_t wallet_type);
 
-    /* Base58 of an array of uint8 */
-    gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length);
+/* Base58 of an array of uint8 */
+gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length);
 
-    /* Bech32 of an array of uint8 */
-    gcry_error_t bech32_encode(char *bech32, size_t char_length, uint8_t *key, size_t uint8_length);
-	
-    /* Getting passwords from user on terminal */
-    int32_t getpasswd(char * passwd);
+/* Bech32 of an array of uint8 */
+gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *key, size_t uint8_length, encoding bech_type);
 
-#ifdef __cplusplus
-}
-#endif
+/* Create checksum for a bech32 address */
+gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, size_t interm_length, encoding bech_type, uint8_t *checksum);
+
+/* Getting passwords from user on terminal */
+int32_t getpasswd(char * passwd);
 	
 #endif  // wall_e_t_h__

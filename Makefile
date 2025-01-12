@@ -1,6 +1,6 @@
 CC=gcc
 FILES=wall_e_t_crypto.c wall_e_t_user.c main.c
-TEST_FILES=wall_e_t_crypto.c test.c
+TEST_FILES=BIP173.c wall_e_t_crypto.c test.c
 TARGET=wall_e_t
 TEST_TARGET=test
 CFLAGS=-Wall -Werror
