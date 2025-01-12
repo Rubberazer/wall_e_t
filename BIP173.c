@@ -105,8 +105,8 @@ uint32_t polymod(uint8_t *intermediate_address, size_t uint8_length) {
 void expand_hrp(const char *hrp, uint8_t *hrp_uint8) {
     for (size_t i = 0; i < strlen(hrp); ++i) {
         uint8_t c = hrp[i];
-		hrp_uint8[i] = c >> 5;
-		hrp_uint8[i+strlen(hrp)+1] = c & 0x1f;
+	hrp_uint8[i] = c >> 5;
+	hrp_uint8[i+strlen(hrp)+1] = c & 0x1f;
     }
     hrp_uint8[strlen(hrp)] = 0;
 }
@@ -115,28 +115,28 @@ gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, siz
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *swap_address = NULL;
 
-	if (strcmp(hrp, "bc")) {
-		fprintf(stderr, "const char *hrp only accepted value is: \"bc\"\n");
-		err = gcry_error_from_errno(EINVAL);
-		return err;
+    if (strcmp(hrp, "bc")) {
+	fprintf(stderr, "const char *hrp only accepted value is: \"bc\"\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
     }
-	if (bech_type != bech32) {
-		fprintf(stderr, "encoding *bech_type only accepted value is: bech32\n");
-		err = gcry_error_from_errno(EINVAL);
-		return err;
+    if (bech_type != bech32) {
+	fprintf(stderr, "encoding *bech_type only accepted value is: bech32\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
     }	
 	
     swap_address = (uint8_t *)gcry_calloc_secure(interm_length+(strlen(hrp)*2+1), sizeof(uint8_t));
     if (swap_address == NULL) {
-		err = gcry_error_from_errno(ENOMEM);
-		goto allocerr1;
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr1;
     }
 	
     expand_hrp(hrp, swap_address);
-	memcpy(swap_address+(strlen(hrp)*2+1), intermediate_address, interm_length);
+    memcpy(swap_address+(strlen(hrp)*2+1), intermediate_address, interm_length);
     uint32_t mod = polymod(swap_address, interm_length+(strlen(hrp)*2+1)) ^ bech_type;
-	for (size_t i = 0; i < 6; ++i) {        
-		checksum[i] = (mod >> (5 * (5 - i))) & 31;
+    for (size_t i = 0; i < 6; ++i) {        
+	checksum[i] = (mod >> (5 * (5 - i))) & 31;
     }
     
     gcry_free(swap_address);
