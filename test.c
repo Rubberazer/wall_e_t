@@ -113,7 +113,12 @@ int main(void) {
     }
 
     printf("\nBech32 address of children public key:\n%s", bech32_address);
-	
+
+    encoding verification = verify_checksum("bc", bech32_address);
+    if (verification != bech32) {
+	printf("Bech32 address not valid\n");
+    }
+
     gcry_free(bech32_address);
     gcry_free(key_address);
     gcry_free(child_keypair);

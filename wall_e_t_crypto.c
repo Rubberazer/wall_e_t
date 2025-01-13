@@ -769,11 +769,15 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     uint64_t *s_swap = NULL;
     uint8_t *checksum = NULL;
     char fiver[] = BECH32;
+    char  *hrp_code = NULL;
 
     if (bech_type != bech32) {
 	fprintf(stderr, "encoding *bech32 only accepted value is: bech32\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
+    }
+    else {
+	hrp_code = "bc";
     }
 	
     const uint32_t intermediate_key_len = ((HASH160_LENGTH*8)%5) ? (HASH160_LENGTH*8/5)+8 : (HASH160_LENGTH*8/5)+7;
@@ -816,7 +820,7 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 	if (i > 15) break;
     }
 	
-    err = create_checksum("bc", intermediate_key, intermediate_key_len, bech32, checksum);
+    err = create_checksum(hrp_code, intermediate_key, intermediate_key_len, bech32, checksum);
     if (err) {
 	fprintf(stderr, "Failed to create bech32 checksum\n");
 	goto allocerr5;
@@ -827,7 +831,12 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     for (size_t i = 0, j = 3; i < intermediate_key_len; i++, j++) {
 	bech32_address[j] = fiver[intermediate_key[i]];
     }
-	
+    
+    encoding verification = verify_checksum(hrp_code, bech32_address);
+    if (verification != bech32) {
+	fprintf(stderr, "Bech32 address not valid\n");
+    }
+    
  allocerr5:
     gcry_free(checksum);
  allocerr4:

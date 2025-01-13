@@ -145,14 +145,63 @@ gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, siz
 }
 
 /* Verify a checksum. */
-/* encoding verify_checksum(const char *hrp, uint8_t *bech_address) { */
-/* 	enconding verif = invalid; */
-/*     // PolyMod computes what value to xor into the final values to make the checksum 0. However, */
-/*     // if we required that the checksum was 0, it would be the case that appending a 0 to a valid */
-/*     // list of values would result in a new valid list. For that reason, Bech32 requires the */
-/*     // resulting checksum to be 1 instead. In Bech32m, this constant was amended. */
-/*     uint32_t check = polymod(cat(expand_hrp(hrp), values)); */
-/*     if (check == encoding_constant(Encoding::BECH32)) return Encoding::BECH32; */
-/*     if (check == encoding_constant(Encoding::BECH32M)) return Encoding::BECH32M; */
-/*     return verif; */
-/* } */
+encoding verify_checksum(const char *hrp, char *bech_address) { 
+    //gcry_error_t err = GPG_ERR_NO_ERROR;
+    encoding verif = invalid;
+    uint8_t *swap_address = NULL;
+    uint8_t *swap_hrp = NULL;
+    uint8_t *interm_address = NULL;
+    
+    swap_address = (uint8_t *)gcry_calloc_secure((strlen(hrp)*2+1)+strlen(bech_address)-3, sizeof(uint8_t));
+    if (swap_address == NULL) {
+	fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
+	goto allocerr1;
+    }
+    swap_hrp = (uint8_t *)gcry_calloc_secure((strlen(hrp)*2+1), sizeof(uint8_t));
+    if (swap_hrp == NULL) {
+	fprintf(stderr, "Problem allocating memory for hrp uint8 array\n");
+	goto allocerr2;
+    } 
+    interm_address = (uint8_t *)gcry_calloc_secure(strlen(bech_address)-3, sizeof(uint8_t));
+    if (interm_address == NULL) {
+	fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
+	goto allocerr3;
+    }
+
+    // PolyMod computes what value to xor into the final values to make the checksum 0. However, */
+    // if we required that the checksum was 0, it would be the case that appending a 0 to a valid */
+    // list of values would result in a new valid list. For that reason, Bech32 requires the */
+    // resulting checksum to be 1 instead. In Bech32m, this constant was amended. */    
+    //uint32_t check = polymod(cat(expand_hrp(hrp), values)); 
+    //if (check == encoding_constant(Encoding::BECH32)) return Encoding::BECH32; 
+    //if (check == encoding_constant(Encoding::BECH32M)) return Encoding::BECH32M;
+
+    for (size_t i = 3, j = 0; i < strlen(bech_address); i++, j++) {
+	char bech_string[] = BECH32;
+	char *position = strchr(bech_string, bech_address[i]);
+	interm_address[j] = (uint8_t)(position-bech_string);;
+    }
+            
+    expand_hrp(hrp, swap_hrp);
+    memcpy(swap_address, swap_hrp, strlen(hrp)*2+1);    
+    memcpy(swap_address+strlen(hrp)*2+1, interm_address, strlen(bech_address)-3);    
+    uint32_t check = polymod(swap_address, (strlen(hrp)*2+1)+strlen(bech_address)-3);
+       
+    if (check == 1) {
+	verif = bech32;
+    }
+    else if (check == 0x2bc830a3) {
+	verif = bech32m;
+    }
+    else {
+	verif = invalid;
+    }
+			     
+    gcry_free(interm_address);
+ allocerr3:
+    gcry_free(swap_hrp);
+ allocerr2:
+    gcry_free(swap_address);
+ allocerr1:
+    return verif; 
+} 
