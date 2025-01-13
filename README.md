@@ -10,4 +10,4 @@ Also code snippets from the reference implementation of [BIP173](https://github.
 In order to compile, you will need to install libgcrypt and SQLite first e.g. on a Debian based system this should be as simple as:
 
     sudo apt install libgcrypt20-dev
-    sudo apt remove libsqlite3-dev	
+    sudo apt install libsqlite3-dev	
