@@ -1,4 +1,4 @@
-/* Bitcoin wallet on the command line based on the libgcrypt library
+/* Bitcoin wallet on the command line based on the libgcrypt & SQLite libraries
  *
  * Copyright 2025 Rubberazer
  *
@@ -152,7 +152,7 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
     uint8_t *swap_hrp = NULL;
     uint8_t *interm_address = NULL;
     
-    swap_address = (uint8_t *)gcry_calloc_secure((strlen(hrp)*2+1)+strlen(bech_address)-3, sizeof(uint8_t));
+    swap_address = (uint8_t *)gcry_calloc_secure((strlen(hrp)*2+1)+strlen(bech_address)-(strlen(hrp)+1), sizeof(uint8_t));
     if (swap_address == NULL) {
 	fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
 	goto allocerr1;
@@ -162,7 +162,7 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
 	fprintf(stderr, "Problem allocating memory for hrp uint8 array\n");
 	goto allocerr2;
     } 
-    interm_address = (uint8_t *)gcry_calloc_secure(strlen(bech_address)-3, sizeof(uint8_t));
+    interm_address = (uint8_t *)gcry_calloc_secure(strlen(bech_address)-(strlen(hrp)+1), sizeof(uint8_t));
     if (interm_address == NULL) {
 	fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
 	goto allocerr3;
@@ -172,9 +172,6 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
     // if we required that the checksum was 0, it would be the case that appending a 0 to a valid */
     // list of values would result in a new valid list. For that reason, Bech32 requires the */
     // resulting checksum to be 1 instead. In Bech32m, this constant was amended. */    
-    //uint32_t check = polymod(cat(expand_hrp(hrp), values)); 
-    //if (check == encoding_constant(Encoding::BECH32)) return Encoding::BECH32; 
-    //if (check == encoding_constant(Encoding::BECH32M)) return Encoding::BECH32M;
 
     for (size_t i = 3, j = 0; i < strlen(bech_address); i++, j++) {
 	char bech_string[] = BECH32;
@@ -184,8 +181,8 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
             
     expand_hrp(hrp, swap_hrp);
     memcpy(swap_address, swap_hrp, strlen(hrp)*2+1);    
-    memcpy(swap_address+strlen(hrp)*2+1, interm_address, strlen(bech_address)-3);    
-    uint32_t check = polymod(swap_address, (strlen(hrp)*2+1)+strlen(bech_address)-3);
+    memcpy(swap_address+strlen(hrp)*2+1, interm_address, strlen(bech_address)-(strlen(hrp)+1));    
+    uint32_t check = polymod(swap_address, (strlen(hrp)*2+1)+strlen(bech_address)-(strlen(hrp)+1));
        
     if (check == 1) {
 	verif = bech32;

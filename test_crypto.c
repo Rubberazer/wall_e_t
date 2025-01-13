@@ -1,4 +1,4 @@
-/* Bitcoin wallet on the command line based on the libgcrypt library
+/* Bitcoin wallet on the command line based on the libgcrypt & SQLite libraries
  *
  * Copyright 2025 Rubberazer
  *
@@ -44,7 +44,7 @@ int main(void) {
     if (key_address == NULL)
 	exit(EXIT_FAILURE);
 	
-    err = create_mnemonic("dasdasds", 24, mnem);
+    err = create_mnemonic("", 24, mnem);
     if (err) {
 	printf("Problem creating mnemonic, error code:%d", err);
     }
@@ -103,7 +103,7 @@ int main(void) {
     printf("\nPrinting master private key address: \n");
     printf("%s", key_address->xpriv);
     printf("\tAddress length: %lu", strlen(key_address->xpriv));
-    printf("\nPrinting master private key address: \n");
+    printf("\nPrinting master public key address: \n");
     printf("%s", key_address->xpub);
     printf("\tAddress length: %lu", strlen(key_address->xpriv));
 

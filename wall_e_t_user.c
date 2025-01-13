@@ -1,4 +1,4 @@
-/* Bitcoin wallet on the command line based on the libgcrypt library
+/* Bitcoin wallet on the command line based on the libgcrypt & SQLite libraries
  *
  * Copyright 2025 Rubberazer
  *

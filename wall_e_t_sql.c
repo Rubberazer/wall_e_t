@@ -15,22 +15,8 @@
  * limitations under the License.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <wall_e_t.h>
-
-int main(int arg, char *arv[]) {
-    static gcry_error_t err = 0;
-    char *passwd = NULL;
-
-    passwd = (char *)gcry_calloc_secure(66, sizeof(char));
-    if (passwd == NULL) {
-	err = -1;
-	goto allocerr1;
-    }
-	
-    getpasswd(passwd);
-	
-    gcry_free(passwd);
- allocerr1:
-	
-    exit(err);	
-}
