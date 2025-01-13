@@ -20,3 +20,18 @@
 #include <string.h>
 #include <errno.h>
 #include <wall_e_t.h>
+
+int32_t create_wallet_db(char *db_name) {
+    int32_t err = 0;
+    sqlite3 *pdb = NULL;
+    
+    err = sqlite3_open_v2(db_name, &pdb, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to create database file: %s with error: %d\n", db_name, err);
+	exit(EXIT_FAILURE);
+    }
+    else printf("Database file created sucessfully: %s\n", db_name);
+
+    return err;
+}
+    
