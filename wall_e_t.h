@@ -224,7 +224,13 @@ gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, siz
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char * passwd);
 
+/* Utility yes/no menu */
+int32_t yes_no_menu(void);
+
 /* Verify Bech32 address */
 encoding verify_checksum(const char *hrp, char *bech_address);
+
+/* Create SQLite database file */
+int32_t create_wallet_db(char *db_name);
 
 #endif  // wall_e_t_h__

@@ -22,6 +22,29 @@
 #include <stdio_ext.h>
 #include <wall_e_t.h>
 
+int32_t yes_no_menu(void) {
+    int32_t err = 0;
+    char answer[5] = "";
+    
+    while (strcmp("yes", answer) || strcmp("no", answer)) {
+	uint32_t pos = 0;
+	fgets(answer, 5, stdin);
+	pos = strcspn(answer, "\n");
+	answer[pos] = 0;
+	if (!strcmp("yes", answer) || !strcmp("Yes", answer)) {
+	    err = 1;
+	    break;
+	}
+	if (!strcmp("no", answer) || !strcmp("No", answer)) {
+	    err = 2;
+	    break;
+	}
+	__fpurge(stdin);
+	fprintf(stdout, "Answer yes or no please\n");
+    }
+    return err;
+}
+
 int32_t getpasswd(char *passwd) {
     int32_t err = 0; 
     struct termios term, term_old;
