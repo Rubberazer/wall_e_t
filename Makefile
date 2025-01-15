@@ -1,13 +1,13 @@
 all:
-	$(MAKE) -C src
+	$(MAKE) -C src all
 
 tests: test_crypt test_sql
 
 test_crypt:
-	$(MAKE) -C src
+	$(MAKE) -C src test_crypt
 
 test_sql:
-	$(MAKE) -C src
+	$(MAKE) -C src test_sql
 
 clean:
-	rm -f *.o $(TARGET) $(TEST_TARGET_CRYPT) $(TEST_TARGET_SQL)
+	$(MAKE) -C src clean
