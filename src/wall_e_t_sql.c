@@ -25,7 +25,7 @@ int32_t create_wallet_db(char *db_name) {
     int32_t err = 0;
 
     if (strlen(db_name) > 54) {
-	fprintf(stderr, "Database file too long.\n");
+	fprintf(stderr, "Database file name too long.\n");
 	err = -1;
 	return err;
     }
@@ -37,7 +37,7 @@ int32_t create_wallet_db(char *db_name) {
     err = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READONLY, NULL);
     if (err == SQLITE_OK) {
 	err = sqlite3_close_v2(pdb);
-	fprintf(stdout, "Database file: %s already exists, do you want to overwrite it (yes/no)?\n", db_name);
+	fprintf(stdout, "Database file: %s already exists, do you want to overwrite it? (yes/no)\n", db_name);
 	err = yes_no_menu();
 	if (err == 2 || !err) {
 	    fprintf(stdout, "Nothing changed\n");
@@ -55,7 +55,6 @@ int32_t create_wallet_db(char *db_name) {
 		fprintf(stderr, "Not possible to create database file: %s with error: %d\n", db_name, err);
 		return err;
 	    }
-	    else fprintf(stdout, "Database file created sucessfully: %s\n", db_name);
 	}
     }
     else {
@@ -64,10 +63,88 @@ int32_t create_wallet_db(char *db_name) {
 	    fprintf(stderr, "Not possible to create database file: %s with error: %d\n", db_name, err);
 	    return err;
 	}
-	else fprintf(stdout, "Database file created sucessfully: %s\n", db_name);	    
     }
 
+    // Create master table
+    char *query = "CREATE TABLE main ("
+	"id INTEGER PRIMARY KEY AUTOINCREMENT,"
+	"private_key TEXT,"
+	"chain_code TEXT,"
+	"public_key TEXT"
+	");";
+    
+    size_t query_bytes = strlen(query);
+    sqlite3_stmt *pstmt = NULL;
+    const char **query_tail = {0};
+    
+    err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
+    if(err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+    err = sqlite3_step(pstmt);
+    if (err != SQLITE_DONE) {
+	fprintf(stderr, "Not possible to execute query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+
+    // Create receive table
+    query = "CREATE TABLE receive ("
+	"id INTEGER PRIMARY KEY,"
+	"private_key TEXT,"
+	"public_key TEXT,"
+	"address TEXT"
+	");";
+
+    err = sqlite3_reset(pstmt);
+    if(err != SQLITE_OK) {
+	fprintf(stderr, "Failed to reset query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+    err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
+    if(err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+    err = sqlite3_step(pstmt);
+    if (err != SQLITE_DONE) {
+	fprintf(stderr, "Not possible to execute query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+
+    // Create change table
+    query = "CREATE TABLE change ("
+	"id INTEGER PRIMARY KEY,"
+	"private_key TEXT,"
+	"public_key TEXT,"
+	"address TEXT"
+	");";
+
+    err = sqlite3_reset(pstmt);
+    if(err != SQLITE_OK) {
+	fprintf(stderr, "Failed to reset query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+    err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
+    if(err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+    err = sqlite3_step(pstmt);
+    if (err != SQLITE_DONE) {
+	fprintf(stderr, "Not possible to execute query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+
+    err = sqlite3_finalize(pstmt);
+    if (err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to destroy statement: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return err;
+    }
+      
     err = sqlite3_close_v2(pdb);
+    fprintf(stdout, "Database created sucessfully: %s\n", db_name);
+    
     return err;
 }
     
