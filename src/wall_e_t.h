@@ -221,6 +221,9 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 /* Create checksum for a bech32 address */
 gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, size_t interm_length, encoding bech_type, uint8_t *checksum);
 
+/* Encrypt a buffer with the AES256-CBC algorithm */
+gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length);
+
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char * passwd);
 

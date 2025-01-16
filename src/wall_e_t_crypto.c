@@ -388,7 +388,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 	goto allocerr6;
     }	
 		
-    r_seed = (uint8_t *)gcry_random_bytes(nbytes, GCRY_VERY_STRONG_RANDOM);
+    r_seed = (uint8_t *)gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
     gcry_md_hash_buffer(GCRY_MD_SHA256, h_seed, r_seed, nbytes);	
     memcpy(e_seed+nbytes, h_seed, 1);	
     memcpy(e_seed, r_seed, nbytes);
@@ -848,3 +848,20 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
  allocerr1:
     return err;
 }
+
+gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length) {
+    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    uint8_t *IV = NULL;
+
+    IV = (uint8_t *)gcry_calloc_secure(gcry_md_get_algo_dlen(GCRY_MD_SHA256), sizeof(uint8_t));
+    if (IV == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr1;
+    }	
+
+    IV = (uint8_t *)gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
+    
+    gcry_free(s_buff);	
+ allocerr1:
+    return err;
+}			   
