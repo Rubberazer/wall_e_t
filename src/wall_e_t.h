@@ -222,7 +222,10 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, size_t interm_length, encoding bech_type, uint8_t *checksum);
 
 /* Encrypt a buffer with the AES256-CBC algorithm */
-gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length);
+gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);
+
+/* Decrypt a buffer with the AES256-CBC algorithm */
+gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);
 
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char * passwd);
@@ -230,10 +233,10 @@ int32_t getpasswd(char * passwd);
 /* Utility yes/no menu */
 int32_t yes_no_menu(void);
 
-/* Verify Bech32 address */
+/* Verify Bech32 address is valid*/
 encoding verify_checksum(const char *hrp, char *bech_address);
 
-/* Create SQLite database file */
+/* Create SQLite database file with wallet tables*/
 int32_t create_wallet_db(char *db_name);
 
 #endif  // wall_e_t_h__

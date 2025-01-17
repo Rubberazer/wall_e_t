@@ -140,10 +140,9 @@ int32_t create_wallet_db(char *db_name) {
     if (err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to destroy statement: %s with error: %s\n", query, sqlite3_errmsg(pdb));
 	return err;
-    }
-      
+    }      
     err = sqlite3_close_v2(pdb);
-    fprintf(stdout, "Database created sucessfully: %s\n", db_name);
+    fprintf(stdout, "Database created sucessfully: %s.db\n", db_name);
     
     return err;
 }

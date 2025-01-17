@@ -15,7 +15,7 @@ INCLUDE=-I ./ -I /usr/include
 all:
 	$(CC) $(CFLAGS) -o $(TGT_FOLDER)$(TARGET) $(FILES) $(LIBS) $(INCLUDE)
 
-test: test_crypt test_sql
+tests: test_crypt test_sql test_user
 
 test_crypt:
 	$(CC) $(CFLAGS) -o $(TGT_FOLDER)$(TEST_TARGET_CRYPT) $(TEST_CRYPT_FILES) $(LIBS) $(INCLUDE)
@@ -27,4 +27,4 @@ test_user:
 	$(CC) $(CFLAGS) -o $(TGT_FOLDER)$(TEST_TARGET_USER) $(TEST_USER_FILES) $(LIBS) $(INCLUDE)
 
 clean:
-	rm -f *.o $(TGT_FOLDER)$(TARGET) $(TGT_FOLDER)$(TEST_TARGET_CRYPT) $(TGT_FOLDER)$(TEST_TARGET_SQL)
+	rm -f *.o $(TGT_FOLDER)$(TARGET) $(TGT_FOLDER)$(TEST_TARGET_CRYPT) $(TGT_FOLDER)$(TEST_TARGET_SQL) $(TGT_FOLDER)$(TEST_TARGET_USER)

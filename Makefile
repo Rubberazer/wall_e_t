@@ -1,7 +1,7 @@
 all:
 	$(MAKE) -C src all
 
-tests: test_crypt test_sql
+tests: test_crypt test_sql test_user
 
 test_crypt:
 	$(MAKE) -C src test_crypt

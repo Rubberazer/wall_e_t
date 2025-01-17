@@ -388,7 +388,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 	goto allocerr6;
     }	
 		
-    r_seed = (uint8_t *)gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
+    r_seed = gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
     gcry_md_hash_buffer(GCRY_MD_SHA256, h_seed, r_seed, nbytes);	
     memcpy(e_seed+nbytes, h_seed, 1);	
     memcpy(e_seed, r_seed, nbytes);
@@ -849,19 +849,72 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     return err;
 }
 
-gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length) {
+gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
-
+    gcry_cipher_hd_t *hd = NULL;
+    uint8_t *s_key = NULL;
+    
+    if (password == NULL || strlen(password) < 1) {
+	fprintf(stderr, "password can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    
     IV = (uint8_t *)gcry_calloc_secure(gcry_md_get_algo_dlen(GCRY_MD_SHA256), sizeof(uint8_t));
     if (IV == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr1;
+    }
+    hd = (gcry_cipher_hd_t *)gcry_calloc_secure(1, sizeof(gcry_cipher_hd_t));
+    if (hd == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr2;
     }	
-
-    IV = (uint8_t *)gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
+    s_key = (uint8_t *)gcry_calloc_secure(gcry_md_get_algo_dlen(GCRY_MD_SHA256), sizeof(uint8_t));
+    if (s_key == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr3;
+    }	
     
-    gcry_free(s_buff);	
+    IV = gcry_random_bytes_secure(gcry_md_get_algo_dlen(GCRY_MD_SHA256), GCRY_VERY_STRONG_RANDOM);
+
+    err = gcry_cipher_open(hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, GCRY_CIPHER_CBC_MAC);
+    if (err) {
+	fprintf(stderr, "Failed to create context handle\n");
+	goto allocerr4;
+    }
+    err = gcry_cipher_setiv(*hd, IV, gcry_md_get_algo_dlen(GCRY_MD_SHA256));
+    if (err) {
+	fprintf(stderr, "Failed to set IV into context handle\n");
+	goto allocerr5;
+    }
+
+    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "bitcoin", 7, PBKDF2_ITERN, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
+    if (err) {
+	fprintf(stderr, "Failed to derive key from password\n");
+	goto allocerr5;
+    }
+    err = gcry_cipher_setkey(*hd, s_key, gcry_md_get_algo_dlen(GCRY_MD_SHA256));
+    if (err) {
+	fprintf(stderr, "Failed to set key into context handle\n");
+	goto allocerr5;
+    }
+
+    err = gcry_cipher_encrypt(*hd, out, in_length+16, in, in_length);
+    if (err) {
+	fprintf(stderr, "Failed to set encrypt\n");
+	goto allocerr5;
+    }
+    
+ allocerr5:
+    gcry_cipher_close(*hd);    
+ allocerr4:
+    gcry_free(s_key);
+ allocerr3:
+    gcry_free(hd);	
+ allocerr2:
+    gcry_free(IV);	
  allocerr1:
     return err;
 }			   
