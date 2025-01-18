@@ -225,7 +225,7 @@ gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, siz
 gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);
 
 /* Decrypt a buffer with the AES256-CBC algorithm */
-gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);
+gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, uint8_t *IV, char *password);
 
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char * passwd);

@@ -119,6 +119,12 @@ int main(void) {
 	printf("Bech32 address not valid\n");
     }
 
+    // Encrypting some string
+    char message[64] = "abcDEF";
+    char encrypted_s[64] = "";
+    //char decrypted_s[64] = "";
+    err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc");
+    
     gcry_free(bech32_address);
     gcry_free(key_address);
     gcry_free(child_keypair);
