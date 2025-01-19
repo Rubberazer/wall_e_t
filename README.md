@@ -1,5 +1,5 @@
 # wall_e_t
-Bitcoin wallet and the collection of functions to build them, all written in C (ONGOING/NOT FINISHED)
+Bitcoin wallet and the collection of functions to build your own, all written in C (ONGOING/NOT FINISHED)
 
 ## Acknowledgments
 This software package is built upon the shoulders of the [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html) and [SQLite](https://www.sqlite.org/copyright.html) libraries, all honour and glory to those developers.
