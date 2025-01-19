@@ -849,7 +849,7 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     return err;
 }
 
-gcry_error_t encrypt_AES256(char *out, char *in, size_t in_length, char *password) {
+gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
     gcry_cipher_hd_t *hd = NULL;
@@ -959,7 +959,7 @@ gcry_error_t encrypt_AES256(char *out, char *in, size_t in_length, char *passwor
     return err;
 }			  
 
-gcry_error_t decrypt_AES256(char *out, char *in, size_t in_length, char *password)  {
+gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password)  {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
     gcry_cipher_hd_t *hd = NULL;

@@ -124,10 +124,10 @@ int main(void) {
     char encrypted_s[128] = "";
     char decrypted_s[256] = "";
     
-    err = encrypt_AES256(encrypted_s, message, strlen(message), "abc");
+    err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc");
     printf("\nEncrypted message: %s\n", encrypted_s);
 
-    err = decrypt_AES256(decrypted_s, encrypted_s, 32, "abc");
+    err = decrypt_AES256((uint8_t *)decrypted_s, (uint8_t *)encrypted_s, 32, "abc");
     printf("\nDecrypted message: %s\n", decrypted_s);
 
     gcry_free(bech32_address);
