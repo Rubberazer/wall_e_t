@@ -913,7 +913,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 
     IV = gcry_random_bytes_secure(16, GCRY_VERY_STRONG_RANDOM);
     
-    err = gcry_cipher_open(hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, 0);
+    err = gcry_cipher_open(hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, GCRY_CIPHER_SECURE);
     if (err) {
 	fprintf(stderr, "Failed to create context handle\n");
 	goto allocerr6;
@@ -1010,7 +1010,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	goto allocerr5;
     }	    
 
-    err = gcry_cipher_open(hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, 0);
+    err = gcry_cipher_open(hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, GCRY_CIPHER_SECURE);
     if (err) {
 	fprintf(stderr, "Failed to create context handle\n");
 	goto allocerr6;
