@@ -874,6 +874,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
+    // PKCS#7
     if (!(in_length%16)) {
 	s_in_length = in_length+16;
     }

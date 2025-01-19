@@ -120,14 +120,14 @@ int main(void) {
     }
 
     // Encrypting some string
-    char *message = "XXXX";
+    char *message = "1234567890123456";
     char encrypted_s[128] = "";
     char decrypted_s[256] = "";
     
     err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc");
     printf("\nEncrypted message: %s\n", encrypted_s);
 
-    err = decrypt_AES256((uint8_t *)decrypted_s, (uint8_t *)encrypted_s, 32, "abc");
+    err = decrypt_AES256((uint8_t *)decrypted_s, (uint8_t *)encrypted_s, 48, "abc");
     printf("\nDecrypted message: %s\n", decrypted_s);
 
     gcry_free(bech32_address);
