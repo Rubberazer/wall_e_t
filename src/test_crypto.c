@@ -120,11 +120,16 @@ int main(void) {
     }
 
     // Encrypting some string
-    char message[64] = "abcDEF";
-    char encrypted_s[64] = "";
-    //char decrypted_s[64] = "";
-    err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc");
+    char *message = "XXXX";
+    char encrypted_s[128] = "";
+    char decrypted_s[256] = "";
     
+    err = encrypt_AES256(encrypted_s, message, strlen(message), "abc");
+    printf("\nEncrypted message: %s\n", encrypted_s);
+
+    err = decrypt_AES256(decrypted_s, encrypted_s, 32, "abc");
+    printf("\nDecrypted message: %s\n", decrypted_s);
+
     gcry_free(bech32_address);
     gcry_free(key_address);
     gcry_free(child_keypair);
