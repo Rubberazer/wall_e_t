@@ -22,6 +22,7 @@
 #ifndef wall_e_t_h__
 #define wall_e_t_h__
 
+#define WALL_E_T_VERSION 0.1
 #define NEED_LIBGCRYPT_VERSION "1.10.1"
 #define PBKDF2_ITERN 2048
 #define HARD_KEY_IDX 0x80000000 //2147483648
@@ -227,6 +228,9 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 
 /* Decrypt a buffer with the AES256-CBC algorithm */
 gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);
+
+/* Sign a buffer with the ECDSA algorithm */
+gcry_error_t sign_ECDSA(uint8_t * data_out, uint8_t * data_in, uint8_t *priv_key);
 
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char * passwd);

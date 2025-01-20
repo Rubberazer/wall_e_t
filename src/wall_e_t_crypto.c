@@ -1059,3 +1059,9 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
  allocerr1:
     return err;
 }
+
+gcry_error_t sign_ECDSA(uint8_t * data_out, uint8_t * data_in, uint8_t *priv_key) {
+    static gcry_error_t err = GPG_ERR_NO_ERROR;
+
+    return err;
+}
