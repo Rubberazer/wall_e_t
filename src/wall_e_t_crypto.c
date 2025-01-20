@@ -937,7 +937,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     
     err = gcry_cipher_encrypt(*hd, s_output, s_in_length, s_input, s_in_length);
     if (err) {
-	fprintf(stderr, "Failed to encrypt with error: %s\n", gcry_strerror(err));
+	fprintf(stderr, "Failed to encrypt\n");
 	goto allocerr6;
     }
    
@@ -1038,7 +1038,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 
     err = gcry_cipher_decrypt(*hd, s_output, in_length-16, s_input, in_length-16);
     if (err) {
-	fprintf(stderr, "Failed to encrypt with error: %s\n", gcry_strerror(err));
+	fprintf(stderr, "Failed to decrypt\n");
 	goto allocerr7;
     }
     
@@ -1060,8 +1060,101 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     return err;
 }
 
-gcry_error_t sign_ECDSA(uint8_t * data_out, uint8_t * data_in, uint8_t *priv_key) {
+gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, uint8_t *priv_key) {
+#define BUFF_SIZE 400
     static gcry_error_t err = GPG_ERR_NO_ERROR;
+    char *s_key_buff = NULL;
+    char *s_data_buff = NULL;
+    char *s_key_swap = NULL;
+    gcry_sexp_t s_key = NULL;
+    gcry_sexp_t s_data = NULL;
+    gcry_sexp_t s_sign = NULL;	
 
+    s_key_buff = (char *)gcry_calloc_secure(BUFF_SIZE, sizeof(char));
+    if (s_key_buff == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr1;
+    }
+    s_data_buff = (char *)gcry_calloc_secure(BUFF_SIZE, sizeof(char));
+    if (s_data_buff == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr2;
+    }	    
+    s_key_swap = (char *)gcry_calloc_secure(BUFF_SIZE, sizeof(char));
+    if (s_key_swap == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr3;
+    }	
+    s_key = (gcry_sexp_t)gcry_calloc_secure(1, sizeof(gcry_sexp_t));
+    if (s_key == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr4;
+    }
+    s_data = (gcry_sexp_t)gcry_calloc_secure(1, sizeof(gcry_sexp_t));
+    if (s_data == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr5;
+    }
+    s_sign = (gcry_sexp_t)gcry_calloc_secure(1, sizeof(gcry_sexp_t));
+    if (s_sign == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr6;
+    }
+    
+    strcpy(s_key_buff, "(private-key\n (ecc\n  (curve \"secp256k1\")\n  (d #");
+    for (uint32_t i = 0; i < 32; i++) {
+	sprintf(s_key_swap, "%02X", priv_key[i]);
+	strcat(s_key_buff, s_key_swap);
+	memset(s_key_swap, 0, strlen(s_key_swap));
+    }
+    strcat(s_key_buff, "#)))");
+    err = gcry_sexp_new(&s_key, s_key_buff, 0, 1);
+    if (err) {
+	fprintf(stderr, "Failed to create s-expression for private key\n");
+	goto allocerr7;
+    }
+    
+    memset(s_key_swap, 0, BUFF_SIZE);
+    strcpy(s_data_buff, "(data\n (flags pkcs1)\n  (hash \"sha256\"");
+    for (uint32_t i = 0; i < 32; i++) {
+	sprintf(s_key_swap, "%02X", data_in[i]);
+	strcat(s_data_buff, s_key_swap);
+	memset(s_key_swap, 0, strlen(s_key_swap));
+    }
+    strcat(s_data_buff, "))");
+    err = gcry_sexp_new(&s_data, s_data_buff, 0, 1);
+    if (err) {
+	fprintf(stderr, "Failed to create s-expression for data\n");
+	goto allocerr7;
+    }    
+    
+    err = gcry_pk_sign(&s_sign, s_data, s_key);
+    if (err) {
+	fprintf(stderr, "Failed to sign data\n");
+	goto allocerr7;
+    }
+
+    memset(s_key_buff, 0, BUFF_SIZE);
+    //char * P = s_key_buff;
+    //s_key_pub = gcry_sexp_find_token(s_key_pub, "q", 0);
+    gcry_sexp_sprint(s_sign, GCRYSEXP_FMT_ADVANCED, s_key_buff, BUFF_SIZE);
+    //s_key_buff = strtok(s_key_buff, "#");
+    //s_key_buff = strtok(NULL, "#");
+    
+ allocerr7:
+    gcry_sexp_release(s_sign);
+ allocerr6:
+    gcry_sexp_release(s_data);
+ allocerr5:
+    gcry_sexp_release(s_key);
+ allocerr4:
+    gcry_free(s_key_swap);	
+ allocerr3:
+    gcry_free(s_data_buff);    
+ allocerr2:
+    gcry_free(s_key_buff);	
+ allocerr1:
+
+#undef BUFF_SIZE
     return err;
 }
