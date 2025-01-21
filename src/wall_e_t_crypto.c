@@ -1060,7 +1060,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     return err;
 }
 
-gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, uint8_t *priv_key) {
+gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, size_t data_length, uint8_t *priv_key) {
 #define BUFF_SIZE 400
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     char *s_key_buff = NULL;
@@ -1069,7 +1069,8 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, uint8_t *priv_key)
     gcry_sexp_t s_key = NULL;
     gcry_sexp_t s_data = NULL;
     gcry_sexp_t s_sign = NULL;	
-
+    uint8_t *data_hash = NULL;
+    
     s_key_buff = (char *)gcry_calloc_secure(BUFF_SIZE, sizeof(char));
     if (s_key_buff == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
@@ -1100,6 +1101,11 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, uint8_t *priv_key)
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr6;
     }
+    data_hash = (uint8_t *)gcry_calloc_secure(gcry_md_get_algo_dlen(GCRY_MD_SHA256), sizeof(uint8_t));
+    if (data_hash == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr7;
+    }	
     
     strcpy(s_key_buff, "(private-key\n (ecc\n  (curve \"secp256k1\")\n  (d #");
     for (uint32_t i = 0; i < 32; i++) {
@@ -1111,36 +1117,37 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, uint8_t *priv_key)
     err = gcry_sexp_new(&s_key, s_key_buff, 0, 1);
     if (err) {
 	fprintf(stderr, "Failed to create s-expression for private key\n");
-	goto allocerr7;
+	goto allocerr8;
     }
-    
+
+    gcry_md_hash_buffer(GCRY_MD_SHA256, data_hash, data_in, data_length);
     memset(s_key_swap, 0, BUFF_SIZE);
-    strcpy(s_data_buff, "(data\n (flags pkcs1)\n  (hash \"sha256\"");
+    strcpy(s_data_buff, "(data\n (flags raw)\n  (value #");
     for (uint32_t i = 0; i < 32; i++) {
-	sprintf(s_key_swap, "%02X", data_in[i]);
+	sprintf(s_key_swap, "%02X", data_hash[i]);
 	strcat(s_data_buff, s_key_swap);
 	memset(s_key_swap, 0, strlen(s_key_swap));
     }
-    strcat(s_data_buff, "))");
-    err = gcry_sexp_new(&s_data, s_data_buff, 0, 1);
+    strcat(s_data_buff, "#))");    
+    err = gcry_sexp_new(&s_data, s_data_buff, strlen(s_data_buff), 0);
     if (err) {
-	fprintf(stderr, "Failed to create s-expression for data\n");
-	goto allocerr7;
+	fprintf(stderr, "Failed to create s-expression for data with error: %s\n", gcry_strerror(err));
+	goto allocerr8;
     }    
     
     err = gcry_pk_sign(&s_sign, s_data, s_key);
     if (err) {
-	fprintf(stderr, "Failed to sign data\n");
-	goto allocerr7;
+	fprintf(stderr, "Failed to sign data with error: %s\n", gcry_strerror(err));
+	goto allocerr8;
     }
 
-    memset(s_key_buff, 0, BUFF_SIZE);
-    //char * P = s_key_buff;
-    //s_key_pub = gcry_sexp_find_token(s_key_pub, "q", 0);
-    gcry_sexp_sprint(s_sign, GCRYSEXP_FMT_ADVANCED, s_key_buff, BUFF_SIZE);
-    //s_key_buff = strtok(s_key_buff, "#");
-    //s_key_buff = strtok(NULL, "#");
+    memset(s_data_buff, 0, BUFF_SIZE);
+    gcry_sexp_sprint(s_sign, GCRYSEXP_FMT_ADVANCED, s_data_buff, BUFF_SIZE);
     
+    
+    
+ allocerr8:
+    gcry_free(data_hash);	
  allocerr7:
     gcry_sexp_release(s_sign);
  allocerr6:

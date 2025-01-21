@@ -148,6 +148,21 @@ int main(void) {
 	printf("%02x", (uint8_t)decrypted_s[i]);
     }
 
+    const char *sign_data = "aaaa";
+    uint8_t data_hash[32] = {0};
+    
+    gcry_md_hash_buffer(GCRY_MD_SHA256, data_hash, sign_data, strlen(sign_data));
+    printf("\nPrinting hash: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", data_hash[i]);
+    }
+        
+    ECDSA_sign_t signature ={0};
+    err = sign_ECDSA(signature, (uint8_t *)sign_data, strlen(sign_data), child_keypair->key_priv);
+    if (err) {
+	printf("Problem creating signature, error code:%d", err);
+    }
+    
     gcry_free(bech32_address);
     gcry_free(key_address);
     gcry_free(child_keypair);
