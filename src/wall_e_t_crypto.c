@@ -292,7 +292,6 @@ gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_k
     err = char_to_uint8(s_key_buff, pub_key, strlen(s_key_buff));
     if (err) {
 	fprintf(stderr, "Failed to convert public key into a numerical format\n");
-	goto allocerr6;
     }	
     s_key_buff = P;
 
@@ -1060,7 +1059,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     return err;
 }
 
-gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, size_t data_length, uint8_t *priv_key) {
+gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_length, uint8_t *priv_key) {
 #define BUFF_SIZE 400
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     char *s_key_buff = NULL;
@@ -1143,8 +1142,32 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, size_t data_length
 
     memset(s_data_buff, 0, BUFF_SIZE);
     gcry_sexp_sprint(s_sign, GCRYSEXP_FMT_ADVANCED, s_data_buff, BUFF_SIZE);
+
+    printf("\nPrinting ECDSA signture s-expression: %s\n",s_data_buff);
     
-    
+    memset(s_key_swap, 0, BUFF_SIZE);
+    char * r = s_key_swap;
+    s_data = gcry_sexp_find_token(s_sign, "r", 0);
+    gcry_sexp_sprint(s_data, GCRYSEXP_FMT_ADVANCED, s_key_swap, BUFF_SIZE);
+    s_key_swap = strtok(s_key_swap, "#");
+    s_key_swap = strtok(NULL, "#");
+    err = char_to_uint8(s_key_swap, sign->r, strlen(s_key_swap));
+    if (err) {
+	fprintf(stderr, "Failed to convert public key into a numerical format\n");
+    }	
+    s_key_swap = r;
+    	
+    memset(s_key_swap, 0, BUFF_SIZE);
+    char * s = s_key_swap;
+    s_data = gcry_sexp_find_token(s_sign, "s", 0);
+    gcry_sexp_sprint(s_data, GCRYSEXP_FMT_ADVANCED, s_key_swap, BUFF_SIZE);
+    s_key_swap = strtok(s_key_swap, "#");
+    s_key_swap = strtok(NULL, "#");
+    err = char_to_uint8(s_key_swap, sign->s, strlen(s_key_swap));
+    if (err) {
+	fprintf(stderr, "Failed to convert public key into a numerical format\n");
+    }	
+    s_key_swap = s;
     
  allocerr8:
     gcry_free(data_hash);	

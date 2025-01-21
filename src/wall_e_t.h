@@ -169,8 +169,8 @@ typedef struct {
 } key_address_t;
 
 typedef struct {
-    uint8_t R[32];
-    uint8_t S[32];
+    uint8_t r[32];
+    uint8_t s[32];
     char DER_r[71];
 } ECDSA_sign_t;
 
@@ -236,7 +236,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);
 
 /* Sign a buffer with the ECDSA algorithm */
-gcry_error_t sign_ECDSA(ECDSA_sign_t sign, uint8_t * data_in, size_t data_length, uint8_t *priv_key);
+gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length, uint8_t *priv_key);
 
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char * passwd);

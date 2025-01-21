@@ -26,7 +26,8 @@ int main(void) {
     key_pair_t *child_keypair = NULL;
     key_address_t *key_address = NULL;
     char *bech32_address = NULL; 
-	
+    ECDSA_sign_t *signature = NULL;
+    
     if (!libgcrypt_initializer()) {
 	exit(EXIT_FAILURE);
     }
@@ -42,6 +43,9 @@ int main(void) {
 	exit(EXIT_FAILURE);
     bech32_address  = (char *)gcry_calloc_secure(64, sizeof(char));
     if (key_address == NULL)
+	exit(EXIT_FAILURE);
+    signature = (ECDSA_sign_t *)gcry_calloc_secure(1, sizeof(ECDSA_sign_t));
+    if (signature == NULL)
 	exit(EXIT_FAILURE);
 	
     err = create_mnemonic("", 24, mnem);
@@ -157,10 +161,18 @@ int main(void) {
 	printf("%02x", data_hash[i]);
     }
         
-    ECDSA_sign_t signature ={0};
     err = sign_ECDSA(signature, (uint8_t *)sign_data, strlen(sign_data), child_keypair->key_priv);
     if (err) {
 	printf("Problem creating signature, error code:%d", err);
+    }
+
+    printf("\nPrinting signature parameter r: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", signature->r[i]);
+    }
+    printf("\nPrinting signature parameter s: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", signature->s[i]);
     }
     
     gcry_free(bech32_address);
