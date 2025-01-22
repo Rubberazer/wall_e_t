@@ -179,7 +179,7 @@ int main(void) {
     for (uint32_t i = 0; i < 71; i++) {
 	printf("%02x", signature->DER_u[i]);
     }
-    printf("\nPrinting DER encoded signature in chars: %s \n",signature->DER);
+    printf("\nPrinting DER encoded signature in string format: \n%s \n",signature->DER);
     
     gcry_free(bech32_address);
     gcry_free(key_address);
