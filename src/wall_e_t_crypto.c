@@ -1139,9 +1139,6 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
 	fprintf(stderr, "Failed to sign data with error:\n");
 	goto allocerr8;
     }
-
-    memset(s_data_buff, 0, BUFF_SIZE);
-    gcry_sexp_sprint(s_sign, GCRYSEXP_FMT_ADVANCED, s_data_buff, BUFF_SIZE);
     
     memset(s_key_swap, 0, BUFF_SIZE);
     char * r = s_key_swap;
@@ -1198,7 +1195,7 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     }
     err = uint8_to_char(sign->DER_u, sign->DER, DER_len);
     if (err) {
-	fprintf(stderr, "Failed to convert signature s into a numerical format\n");
+	fprintf(stderr, "Failed to convert signature s into a string format\n");
     }	
     
  allocerr8:
