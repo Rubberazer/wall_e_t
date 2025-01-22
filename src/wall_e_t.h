@@ -171,7 +171,8 @@ typedef struct {
 typedef struct {
     uint8_t r[32];
     uint8_t s[32];
-    char DER_r[71];
+    uint8_t DER_u[71];
+    char DER[142];
 } ECDSA_sign_t;
 
 typedef enum {

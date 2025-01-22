@@ -1165,6 +1165,41 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
 	fprintf(stderr, "Failed to convert signature s into a numerical format\n");
     }	
     s_key_swap = r;
+
+    // DER Encoding
+    size_t DER_len = 0;
+    if (sign->r[0] > 0x80) {
+	sign->DER_u[0] = 0x30;
+	sign->DER_u[1] = 0x45;
+	sign->DER_u[2] = 0x02;
+	sign->DER_u[3] = 0x21;
+	sign->DER_u[4] = 0x00;
+	sign->DER_u[37] = 0x02;
+	sign->DER_u[38] = 0x20;
+	for (size_t i = 0; i < 32; i++) {
+	    sign->DER_u[5+i] = sign->r[i];
+	    sign->DER_u[39+i] = sign->s[i];
+	}
+	DER_len = 71;
+    }
+    else {
+	sign->DER_u[71] = 0x00;
+	sign->DER_u[0] = 0x30;
+	sign->DER_u[1] = 0x44;
+	sign->DER_u[2] = 0x02;
+	sign->DER_u[3] = 0x20;
+	sign->DER_u[36] = 0x02;
+	sign->DER_u[37] = 0x20;
+	for (size_t i = 0; i < 32; i++) {
+	    sign->DER_u[4+i] = sign->r[i];
+	    sign->DER_u[38+i] = sign->s[i];
+	}
+	DER_len = 70;
+    }
+    err = uint8_to_char(sign->DER_u, sign->DER, DER_len);
+    if (err) {
+	fprintf(stderr, "Failed to convert signature s into a numerical format\n");
+    }	
     
  allocerr8:
     gcry_free(data_hash);	
