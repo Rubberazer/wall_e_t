@@ -1130,20 +1130,18 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     strcat(s_data_buff, "#))");    
     err = gcry_sexp_new(&s_data, s_data_buff, strlen(s_data_buff), 0);
     if (err) {
-	fprintf(stderr, "Failed to create s-expression for data with error: %s\n", gcry_strerror(err));
+	fprintf(stderr, "Failed to create s-expression for data with error: \n");
 	goto allocerr8;
     }    
     
     err = gcry_pk_sign(&s_sign, s_data, s_key);
     if (err) {
-	fprintf(stderr, "Failed to sign data with error: %s\n", gcry_strerror(err));
+	fprintf(stderr, "Failed to sign data with error:\n");
 	goto allocerr8;
     }
 
     memset(s_data_buff, 0, BUFF_SIZE);
     gcry_sexp_sprint(s_sign, GCRYSEXP_FMT_ADVANCED, s_data_buff, BUFF_SIZE);
-
-    printf("\nPrinting ECDSA signture s-expression: %s\n",s_data_buff);
     
     memset(s_key_swap, 0, BUFF_SIZE);
     char * r = s_key_swap;
@@ -1153,21 +1151,20 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     s_key_swap = strtok(NULL, "#");
     err = char_to_uint8(s_key_swap, sign->r, strlen(s_key_swap));
     if (err) {
-	fprintf(stderr, "Failed to convert public key into a numerical format\n");
+	fprintf(stderr, "Failed to convert signature r value  into a numerical format\n");
     }	
     s_key_swap = r;
     	
     memset(s_key_swap, 0, BUFF_SIZE);
-    char * s = s_key_swap;
     s_data = gcry_sexp_find_token(s_sign, "s", 0);
     gcry_sexp_sprint(s_data, GCRYSEXP_FMT_ADVANCED, s_key_swap, BUFF_SIZE);
     s_key_swap = strtok(s_key_swap, "#");
     s_key_swap = strtok(NULL, "#");
     err = char_to_uint8(s_key_swap, sign->s, strlen(s_key_swap));
     if (err) {
-	fprintf(stderr, "Failed to convert public key into a numerical format\n");
+	fprintf(stderr, "Failed to convert signature s into a numerical format\n");
     }	
-    s_key_swap = s;
+    s_key_swap = r;
     
  allocerr8:
     gcry_free(data_hash);	
