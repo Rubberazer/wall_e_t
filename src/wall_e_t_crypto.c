@@ -69,6 +69,17 @@ gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_leng
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     char *string_swap = NULL;
 
+    if (s_string == NULL || string_length < 1) {
+	fprintf (stderr, "s_string can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (s_number == NULL) {
+	fprintf(stderr, "s_number can´t be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }	
+
     string_swap = (char *)gcry_calloc_secure(5, sizeof(char));
     if (string_swap == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
@@ -89,6 +100,17 @@ gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_leng
 gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_length) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     char *string_swap = NULL;
+    
+    if (s_number == NULL || uint8_length < 1) {
+	fprintf (stderr, "s_number can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (s_string == NULL) {
+	fprintf(stderr, "s_string can´t be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }	
 
     string_swap = (char *)gcry_calloc_secure(5, sizeof(char));
     if (string_swap == NULL) {
