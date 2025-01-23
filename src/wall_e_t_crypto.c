@@ -651,8 +651,8 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
-    if (keys_address == NULL || keys == NULL || keys_address == NULL) {
-	fprintf(stderr, "Keys_address and keys can't be NULL\n");
+    if (keys_address == NULL || keys == NULL) {
+	fprintf(stderr, "keys_address, keys can't be NULL\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
@@ -778,7 +778,12 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     else {
 	hrp_code = "bc";
     }
-	
+    if (bech32_address == NULL || key == NULL) {
+	fprintf(stderr, "bech32_address and key pointers can't be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+       
     const uint32_t intermediate_key_len = ((HASH160_LENGTH*8)%5) ? (HASH160_LENGTH*8/5)+8 : (HASH160_LENGTH*8/5)+7;
 	
     intermediate_key = (uint8_t *)gcry_calloc_secure(intermediate_key_len, sizeof(uint8_t));
@@ -863,7 +868,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	return err;
     }
     if (in == NULL || out == NULL) {
-	fprintf(stderr, "input or output buffers can't be NULL\n");
+	fprintf(stderr, "input and output buffers can't be NULL\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
@@ -973,7 +978,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	return err;
     }
     if (in == NULL || out == NULL) {
-	fprintf(stderr, "input or output buffers can't be NULL\n");
+	fprintf(stderr, "input and output buffers can't be NULL\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
@@ -1069,7 +1074,18 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     gcry_sexp_t s_data = NULL;
     gcry_sexp_t s_sign = NULL;	
     uint8_t *data_hash = NULL;
-    
+        
+    if (sign == NULL || data_in == NULL || priv_key == NULL) {
+	fprintf(stderr, "sign, data_in and priv_key can't NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (data_length < 1) {
+	fprintf(stderr, "data length can't be 0\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }    
+
     s_key_buff = (char *)gcry_calloc_secure(BUFF_SIZE, sizeof(char));
     if (s_key_buff == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
