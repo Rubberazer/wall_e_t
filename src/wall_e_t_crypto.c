@@ -132,7 +132,18 @@ gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_lengt
 gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *s_buff = NULL;
-	
+
+    if (hex == NULL || hex_length < 1) {
+	fprintf (stderr, "hex can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (hash160 == NULL) {
+	fprintf(stderr, "hash160 can´t be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }	
+
     s_buff = (uint8_t *)gcry_calloc_secure(gcry_md_get_algo_dlen(GCRY_MD_SHA256), sizeof(uint8_t));
     if (s_buff == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
@@ -157,7 +168,18 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
     char *string_swap = NULL;
     uint32_t *uint8_swap = NULL;
     char base58_arr[] = BASE58;
-	
+
+    if (key == NULL || uint8_length < 1) {
+	fprintf (stderr, "key can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (base58 == NULL || char_length < 1) {
+	fprintf(stderr, "base58 can´t be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }	
+
     mpi_base58 = gcry_mpi_snew(8);
     if (mpi_base58 == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
