@@ -28,7 +28,7 @@ gcry_error_t libgcrypt_initializer(void) {
     const char *version = gcry_check_version(NEED_LIBGCRYPT_VERSION);
     fprintf(stdout, "libgcrypt version: %s\n", version);
     if (!version) {
-	fprintf(stderr, "libgcrypt is too old (need %s, have %s)\n",
+	fprintf(stderr, "Libgcrypt is too old (need %s, have %s)\n",
 		NEED_LIBGCRYPT_VERSION, gcry_check_version(NULL));
 	exit(EXIT_FAILURE);
     }
@@ -40,7 +40,7 @@ gcry_error_t libgcrypt_initializer(void) {
     }
 	
     // Enable secure memory
-    err = gcry_control(GCRYCTL_INIT_SECMEM, 16777216, 0);
+    err = gcry_control(GCRYCTL_INIT_SECMEM, 33554432, 0);
     if (err) {
 	fprintf(stderr, "Secure memory enabling failed, exiting\n");
 	exit(EXIT_FAILURE);
@@ -369,9 +369,9 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     uint8_t *e_seed = NULL;
     uint32_t *s_swap = NULL;
     word_t *words = NULL;
-    char s_salt[30] = "mnemonic";
+    char *s_salt = NULL;
     gcry_buffer_t *key_buff = NULL; 	
-
+    
     if (salt == NULL || strlen(salt) > 20) {
 	fprintf (stderr, "Salt is limited to 20 characters in english, no emoticons\n");
 	err = gcry_error_from_errno(EINVAL);
@@ -420,15 +420,20 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr4;
     }
-    words = (word_t *)gcry_calloc_secure(1, sizeof(word_t)+50*nwords);
+    words = (word_t *)gcry_calloc_secure(1, sizeof(word_t)+20*nwords*sizeof(char));
     if (words == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr5;
     }
+    s_salt = (char *)gcry_calloc_secure(30, sizeof(char));
+    if (s_salt == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr6;
+    }
     key_buff = (gcry_buffer_t *)gcry_calloc_secure(2, sizeof(gcry_buffer_t));
     if (key_buff == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
-	goto allocerr6;
+	goto allocerr7;
     }	
 		
     r_seed = gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
@@ -453,12 +458,13 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 	if (i != (nwords-1))
 	    strcat(mnem->mnemonic, " ");
     }
+    strcpy(s_salt, "mnemonic");
     strcat(s_salt, salt);
-	
+    
     err = gcry_kdf_derive(mnem->mnemonic, strlen(mnem->mnemonic), GCRY_KDF_PBKDF2, GCRY_MD_SHA512, s_salt, strlen(s_salt), PBKDF2_ITERN, gcry_md_get_algo_dlen(GCRY_MD_SHA512), mnem->seed);
     if (err) {
 	fprintf(stderr, "Failed to derive seed\n");
-	goto allocerr7;
+	goto allocerr8;
     }
 
     key_buff[0].len = strlen("Bitcoin seed");
@@ -469,7 +475,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     err = gcry_md_hash_buffers(GCRY_MD_SHA512, GCRY_MD_FLAG_HMAC, mnem->keys.key_priv_chain, key_buff, 2);
     if (err) {
 	fprintf(stderr, "Failed to produce master key with chain code\n");
-	goto allocerr7;
+	goto allocerr8;
     }
 
     memcpy(mnem->keys.key_priv, mnem->keys.key_priv_chain, PRIVKEY_LENGTH);
@@ -478,13 +484,14 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     err = pub_from_priv(mnem->keys.key_pub, mnem->keys.key_pub_comp, mnem->keys.key_priv);
     if (err) {
 	fprintf(stderr, "Failed to produce public key from private\n");
-	goto allocerr7;
+	goto allocerr8;
     }
-
     mnem->keys.key_index = 0x00; 
 
- allocerr7:
+ allocerr8:
     gcry_free(key_buff);	
+ allocerr7:
+    gcry_free(s_salt);
  allocerr6:
     gcry_free(words);
  allocerr5:
@@ -497,6 +504,132 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     gcry_free(r_seed);
  allocerr1:
 	
+    return err;
+}
+
+gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem) {
+    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    typedef char word_t[24][20];
+    char *wordlist[] = {WORDLIST};
+    word_t *words = NULL;
+    char *s_salt = NULL;
+    char *s_swap = NULL;
+    gcry_buffer_t *key_buff = NULL;
+    
+    if (mnemonic == NULL || strlen(mnemonic) < 1) {
+	fprintf(stderr, "mnemonic can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (mnem == NULL) {
+	fprintf(stderr, "keys can't be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (salt == NULL || strlen(salt) > 20) {
+	fprintf (stderr, "salt is limited to 20 characters in english, no emoticons\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+
+    words = (word_t *)gcry_calloc_secure(1, sizeof(word_t));
+    if (words == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr1;
+    }	
+    s_salt = (char *)gcry_calloc_secure(30, sizeof(char));
+    if (s_salt == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr2;
+    }
+    s_swap = (char *)gcry_calloc_secure(50, sizeof(char));
+    if (s_swap == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr3;
+    }
+    key_buff = (gcry_buffer_t *)gcry_calloc_secure(2, sizeof(gcry_buffer_t));
+    if (key_buff == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr4;
+    }	
+
+    uint32_t i = 0;
+    uint32_t j = 0;
+    int32_t count = 0;
+    while (mnemonic[i] != '\0') {
+	while (mnemonic[i] == ' ') {
+	    i++;
+	}
+	while (mnemonic[i] != ' ' && mnemonic[i] != '\0') {
+	    s_swap[j] = mnemonic[i];
+	    i++, j++;
+	}
+	strcpy(*words[count], s_swap);
+	memset(s_swap, 0, 50);
+	j = 0;
+	count++;
+    }
+
+    if (count != 12 && count != 15 && count != 18 && count != 21 && count != 24) {
+	err = gcry_error_from_errno(EINVAL);
+	fprintf(stderr, "Number of words in mnemonic phrase is not standard\n");
+	goto allocerr5;
+    }
+
+    uint32_t match = 0;
+    for (uint32_t i = 0; i < count; i++) {
+	for (uint32_t j = 0; j < 2048; j++) {
+	    if (!strcmp(*words[i], wordlist[j])) {
+		match++;
+	    }
+	}
+    }
+    if (count != match) {
+	err = gcry_error_from_errno(EINVAL);
+	fprintf(stderr, "Words not in dictionary, mnemonic is not valid\n");
+	goto allocerr5;
+    }
+    
+    strcpy(s_salt, "mnemonic");
+    strcat(s_salt, salt);
+    
+    err = gcry_kdf_derive(mnemonic, strlen(mnemonic), GCRY_KDF_PBKDF2, GCRY_MD_SHA512, s_salt, strlen(s_salt), PBKDF2_ITERN, gcry_md_get_algo_dlen(GCRY_MD_SHA512), mnem->seed);
+    if (err) {
+	fprintf(stderr, "Failed to derive seed\n");
+	goto allocerr5;
+    }
+
+    key_buff[0].len = strlen("Bitcoin seed");
+    key_buff[0].data = "Bitcoin seed";
+    key_buff[1].len = gcry_md_get_algo_dlen(GCRY_MD_SHA512);
+    key_buff[1].data = mnem->seed;
+		
+    err = gcry_md_hash_buffers(GCRY_MD_SHA512, GCRY_MD_FLAG_HMAC, mnem->keys.key_priv_chain, key_buff, 2);
+    if (err) {
+	fprintf(stderr, "Failed to produce master key with chain code\n");
+	goto allocerr5;
+    }
+
+    memcpy(mnem->keys.key_priv, mnem->keys.key_priv_chain, PRIVKEY_LENGTH);
+    memcpy(mnem->keys.chain_code, mnem->keys.key_priv_chain+PRIVKEY_LENGTH, CHAINCODE_LENGTH);
+
+    err = pub_from_priv(mnem->keys.key_pub, mnem->keys.key_pub_comp, mnem->keys.key_priv);
+    if (err) {
+	fprintf(stderr, "Failed to produce public key from private\n");
+	goto allocerr5;
+    }
+    mnem->keys.key_index = 0x00; 
+
+ allocerr5:
+    gcry_free(key_buff);    
+ allocerr4:
+    gcry_free(s_swap);
+ allocerr3:
+    gcry_free(s_salt);
+ allocerr2:
+    gcry_free(words);
+ allocerr1:
+    
     return err;
 }
 
@@ -715,8 +848,7 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
     if (checksum == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr3;
-    }	
-	
+    }		
     if (depth) {		
 	err = hash_to_hash160(hash160, par_pub, PUBKEY_LENGTH);
 	if (err) {
@@ -1108,7 +1240,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     return err;
 }
 
-gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_length, uint8_t *priv_key) {
+gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length, uint8_t *priv_key) {
 #define BUFF_SIZE 400
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     char *s_key_buff = NULL;
@@ -1190,18 +1322,18 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     strcat(s_data_buff, "#))");    
     err = gcry_sexp_new(&s_data, s_data_buff, strlen(s_data_buff), 0);
     if (err) {
-	fprintf(stderr, "Failed to create s-expression for data with error: \n");
+	fprintf(stderr, "Failed to create s-expression from data\n");
 	goto allocerr8;
     }    
     
     err = gcry_pk_sign(&s_sign, s_data, s_key);
     if (err) {
-	fprintf(stderr, "Failed to sign data with error:\n");
+	fprintf(stderr, "Failed to sign data\n");
 	goto allocerr8;
     }
-    
+        
     memset(s_key_swap, 0, BUFF_SIZE);
-    char * r = s_key_swap;
+    char * P = s_key_swap;
     s_data = gcry_sexp_find_token(s_sign, "r", 0);
     gcry_sexp_sprint(s_data, GCRYSEXP_FMT_ADVANCED, s_key_swap, BUFF_SIZE);
     s_key_swap = strtok(s_key_swap, "#");
@@ -1210,7 +1342,7 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     if (err) {
 	fprintf(stderr, "Failed to convert signature r value  into a numerical format\n");
     }	
-    s_key_swap = r;
+    s_key_swap = P;
     	
     memset(s_key_swap, 0, BUFF_SIZE);
     s_data = gcry_sexp_find_token(s_sign, "s", 0);
@@ -1221,7 +1353,7 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t * data_in, size_t data_lengt
     if (err) {
 	fprintf(stderr, "Failed to convert signature s into a numerical format\n");
     }	
-    s_key_swap = r;
+    s_key_swap = P;
 
     // DER Encoding
     size_t DER_len = 0;

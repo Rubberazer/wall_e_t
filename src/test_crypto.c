@@ -180,7 +180,33 @@ int main(void) {
 	printf("%02x", signature->DER_u[i]);
     }
     printf("\nPrinting DER encoded signature in string format: \n%s \n",signature->DER);
-    
+
+    char mnemonic_test[1000];
+    printf("\nOriginal mnemonic: %s\n", mnem->mnemonic);
+    strcpy(mnemonic_test, mnem->mnemonic);
+    memset(mnem, 0, sizeof(mnemonic_t));
+    err = recover_from_mnemonic(mnemonic_test, "", mnem);
+    if (err) {
+	printf("Problem recovering wallet from mnemonic, error code:%s", gcry_strerror(err));
+    }
+    printf("\nPrinting recovered seed: \n");
+    for (uint32_t i = 0; i < 64; i++) {
+	printf("%02x",mnem->seed[i]);
+    }
+    printf("\nPrinting recovered master key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x",mnem->keys.key_priv[i]);
+    }
+    printf("\nPrinting recovered master chain code: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x",mnem->keys.chain_code[i]);
+    }
+    printf("\nPrinting recovered compressed public master key: \n");
+    for (uint32_t i = 0; i < 33; i++) {
+	printf("%02x",mnem->keys.key_pub_comp[i]);
+    }
+
+    gcry_free(signature);
     gcry_free(bech32_address);
     gcry_free(key_address);
     gcry_free(child_keypair);

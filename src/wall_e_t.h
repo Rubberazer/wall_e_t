@@ -202,7 +202,10 @@ gcry_error_t libgcrypt_initializer(void);
 
 /* Create seed + mnemonic + master keys and chain code for new wallet with salt */
 gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem);
-	
+
+/* Recover wallet/root key from mnemonic + passphrase */
+gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem);
+
 /* Public key from private one */
 gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_key);
 
