@@ -48,7 +48,7 @@ int main(void) {
     if (signature == NULL)
 	exit(EXIT_FAILURE);
 	
-    err = create_mnemonic("", 15, mnem);
+    err = create_mnemonic("", 24, mnem);
     if (err) {
 	printf("Problem creating mnemonic, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
     }
@@ -214,6 +214,8 @@ int main(void) {
     for (uint32_t i = 0; i < 33; i++) {
 	printf("%02x",mnem->keys.key_pub_comp[i]);
     }
+
+    //printf("\nSize of gcry_sexp_t: %lu\n", sizeof(gcry_sexp_t));
     
     gcry_free(signature);
     gcry_free(bech32_address);
