@@ -40,7 +40,7 @@ gcry_error_t libgcrypt_initializer(void) {
     }
 	
     // Enable secure memory
-    err = gcry_control(GCRYCTL_INIT_SECMEM, 33554432, 0);
+    err = gcry_control(GCRYCTL_INIT_SECMEM, 2097152, 0);
     if (err) {
 	fprintf(stderr, "Secure memory enabling failed, exiting\n");
 	exit(EXIT_FAILURE);
@@ -509,7 +509,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 
 gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
-    typedef char word_t[24][20];
+    typedef char word_t[24][50];
     char *wordlist[] = {WORDLIST};
     word_t *words = NULL;
     char *s_salt = NULL;

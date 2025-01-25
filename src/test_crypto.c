@@ -48,7 +48,7 @@ int main(void) {
     if (signature == NULL)
 	exit(EXIT_FAILURE);
 	
-    err = create_mnemonic("", 24, mnem);
+    err = create_mnemonic("", 15, mnem);
     if (err) {
 	printf("Problem creating mnemonic, error code:%d", err);
     }
@@ -185,9 +185,10 @@ int main(void) {
     printf("\nOriginal mnemonic: %s\n", mnem->mnemonic);
     strcpy(mnemonic_test, mnem->mnemonic);
     memset(mnem, 0, sizeof(mnemonic_t));
+    
     err = recover_from_mnemonic(mnemonic_test, "", mnem);
     if (err) {
-	printf("Problem recovering wallet from mnemonic, error code:%s", gcry_strerror(err));
+	printf("Problem recovering wallet from mnemonic, error code:%s & error source:%s", gcry_strerror(err), gcry_strsource(err));
     }
     printf("\nPrinting recovered seed: \n");
     for (uint32_t i = 0; i < 64; i++) {

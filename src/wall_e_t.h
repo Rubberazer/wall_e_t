@@ -23,7 +23,7 @@
 #define wall_e_t_h__
 
 #define WALL_E_T_VERSION 0.1
-#define NEED_LIBGCRYPT_VERSION "1.10.1"
+#define NEED_LIBGCRYPT_VERSION "1.11.0"
 #define PBKDF2_ITERN 2048
 #define HARD_KEY_IDX 0x80000000 //2147483648
 #define N_SECP256K1 "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
@@ -200,7 +200,7 @@ typedef enum {
 /* Initializing libgcrypt */
 gcry_error_t libgcrypt_initializer(void);
 
-/* Create seed + mnemonic + master keys and chain code for new wallet with salt */
+/* Create seed + mnemonic + master keys and chain code for new wallet with passphrase/salt */
 gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem);
 
 /* Recover wallet/root key from mnemonic + passphrase */
