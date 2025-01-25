@@ -1,5 +1,6 @@
 # wall_e_t
 Bitcoin wallet and the collection of functions to build your own, all written in C (ONGOING/NOT FINISHED).
+
 This software implements the following standards or BIPs (Bitcoin Improvement Proposals):
  - [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) Hierarchical Deterministic Wallets
  - [BIP39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) Mnemonic code for generating deterministic keys
