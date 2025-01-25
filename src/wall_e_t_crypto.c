@@ -40,7 +40,7 @@ gcry_error_t libgcrypt_initializer(void) {
     }
 	
     // Enable secure memory
-    err = gcry_control(GCRYCTL_INIT_SECMEM, 2097152, 0);
+    err = gcry_control(GCRYCTL_INIT_SECMEM, 5242880, 0);
     if (err) {
 	fprintf(stderr, "Secure memory enabling failed, exiting\n");
 	exit(EXIT_FAILURE);
@@ -436,7 +436,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 	goto allocerr7;
     }	
 		
-    r_seed = gcry_random_bytes_secure(nbytes, GCRY_VERY_STRONG_RANDOM);
+    r_seed = gcry_random_bytes(nbytes, GCRY_VERY_STRONG_RANDOM);
     gcry_md_hash_buffer(GCRY_MD_SHA256, h_seed, r_seed, nbytes);	
     memcpy(e_seed+nbytes, h_seed, 1);	
     memcpy(e_seed, r_seed, nbytes);
