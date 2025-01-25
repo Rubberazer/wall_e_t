@@ -31,34 +31,29 @@ gcry_error_t libgcrypt_initializer(void) {
 	fprintf(stderr, "Libgcrypt is too old (need %s, have %s)\n",
 		NEED_LIBGCRYPT_VERSION, gcry_check_version(NULL));
 	exit(EXIT_FAILURE);
-    }
-	
+    }	
     err = gcry_control(GCRYCTL_SUSPEND_SECMEM_WARN);
     if (err) {
 	fprintf(stderr, "Suspending memory warnings failed, exiting\n");
 	exit(EXIT_FAILURE);
-    }
-	
+    }	
     // Enable secure memory
     err = gcry_control(GCRYCTL_INIT_SECMEM, 5242880, 0);
     if (err) {
 	fprintf(stderr, "Secure memory enabling failed, exiting\n");
 	exit(EXIT_FAILURE);
     }
-
     err = gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
     if (err) {
 	fprintf(stderr, "Enabling memory warnings failed, exiting\n");
 	exit(EXIT_FAILURE);
-    }
-	
+    }	
     // Tell Libgcrypt that initialization is completed. */
     err = gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0);
     if (err) {
 	fprintf(stderr, "Libgcrypt initialization failed, exiting\n");
 	exit(EXIT_FAILURE);
     }
-
     // Verify that initialization is complete
     err = gcry_control(GCRYCTL_INITIALIZATION_FINISHED_P);
 	
@@ -437,6 +432,11 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     }	
 		
     r_seed = gcry_random_bytes(nbytes, GCRY_VERY_STRONG_RANDOM);
+    if (r_seed == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr8;
+    }	
+
     gcry_md_hash_buffer(GCRY_MD_SHA256, h_seed, r_seed, nbytes);	
     memcpy(e_seed+nbytes, h_seed, 1);	
     memcpy(e_seed, r_seed, nbytes);

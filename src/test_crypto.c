@@ -139,6 +139,10 @@ int main(void) {
     s_in_length += 16;
     
     err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc&we45./");
+    if (err) {
+	printf("Problem encrypting message, error code:%d", err);
+    }
+
     printf("\nEncrypted message: %s\n", encrypted_s);
     printf("\nPrinting encrypted message in hex : \n");
     for (uint32_t i = 0; i < s_in_length; i++) {
@@ -146,6 +150,10 @@ int main(void) {
     }
 
     err = decrypt_AES256((uint8_t *)decrypted_s, (uint8_t *)encrypted_s, s_in_length, "abc&we45./");
+    if (err) {
+	printf("Problem decrypting message, error code:%d", err);
+    }
+
     printf("\nDecrypted message: %s\n", decrypted_s);
     printf("\nPrinting decrypted message in hex : \n");
     for (uint32_t i = 0; i < 16; i++) {
