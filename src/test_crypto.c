@@ -99,7 +99,7 @@ int main(void) {
 	printf("%02x", child_keypair->key_pub_comp[i]);
     }
 
-    err = ext_keys_address(key_address, &mnem->keys, NULL, 0, wBIP84);
+    err = ext_keys_address(key_address, &mnem->keys, NULL, 0, 0, wBIP84);
     if (err) {
 	printf("Problem creating address from keys, error code:%d", err);
     }

@@ -25,15 +25,15 @@
 #define WALL_E_T_VERSION 0.1
 #define NEED_LIBGCRYPT_VERSION "1.10.1"
 #define PBKDF2_ITERN 2048
-#define HARD_KEY_IDX 0x80000000 //2147483648
+#define HARD_KEY_IDX 2147483648
 #define N_SECP256K1 "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
 #define Gx_SECP256K1 "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
-#define BIP84 0x54
-#define COIN_BITCOIN 0x00
-#define ACCOUNT 0x00
+#define BIP84 84
+#define COIN_BITCOIN 0
+#define ACCOUNT 0
 #define HASH160_LENGTH 20
 #define PRIVKEY_LENGTH 32
-#define CHAINCODE_LENGTH PRIVKEY_LENGTH
+#define CHAINCODE_LENGTH 32
 #define PUBKEY_LENGTH 33
 #define CHECKSUM 4
 #define INTER_KEY 78
@@ -154,7 +154,7 @@ typedef struct {
     uint8_t key_priv[PRIVKEY_LENGTH];
     uint8_t key_priv_chain[PRIVKEY_LENGTH+CHAINCODE_LENGTH];
     uint8_t chain_code[CHAINCODE_LENGTH];
-    size_t key_index;
+    uint32_t key_index;
 } key_pair_t;
 
 typedef struct {
@@ -216,13 +216,13 @@ gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_leng
 gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_length);
 	
 /* Key derivation from parent keys */
-gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, size_t key_index, hardened_t hardened);
+gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, uint32_t key_index, hardened_t hardened);
 
 /* HASH160 of an array of uint8 */
 gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length);
 	
 /* Key address format from hex, if par_pub is NULL and depth is 0 a master key is assumed */
-gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, BIP_t wallet_type);
+gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, uint32_t key_index, BIP_t wallet_type);
 
 /* Base58 of an array of uint8 */
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length);

@@ -617,7 +617,7 @@ gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem)
     return err;
 }
 
-gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, size_t key_index, hardened_t hardened) {
+gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, uint32_t key_index, hardened_t hardened) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_buffer_t *key_buff = NULL;
     uint8_t *swap_priv_key = NULL;
@@ -697,12 +697,13 @@ gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t
 	goto allocerr10;
     }
 	
-    if (hardened) {
+    if (hardened == hardened_child) {
 	*index = HARD_KEY_IDX+key_index;
     }
     else {
-	*index = +key_index;
+	*index = key_index;
     }
+    child_keys->key_index = *index;
 
     *index = ((*index << 24) & 0xff000000) | ((*index << 8) & 0x00ff0000) | ((*index >> 8) & 0x0000ff00) | ((*index >> 24) & 0x000000ff);
     swap_priv_key[0] = 0x00;
@@ -799,7 +800,7 @@ gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t
     return err;
 }
 
-gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, BIP_t wallet_type)  {
+gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, uint32_t key_index, BIP_t wallet_type)  {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *intermediate_key = NULL;
     uint8_t *hash160 = NULL;
@@ -809,6 +810,11 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 	
     if (depth < 0) {
 	fprintf(stderr, "Depth should be 0 or higher\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (key_index < 0) {
+	fprintf(stderr, "Derived key index should be bigger than 0\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
@@ -860,12 +866,12 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
     default:
 	BIP_PRV = ZPRV;
 	BIP_PUB = ZPUB;		
-    } 
-	
-    keys->key_index = ((keys->key_index << 24) & 0xff000000) | ((keys->key_index << 8) & 0x00ff0000) | ((keys->key_index >> 8) & 0x0000ff00) | ((keys->key_index >> 24) & 0x000000ff);
+    }
+    
+    key_index = ((key_index << 24) & 0xff000000) | ((key_index << 8) & 0x00ff0000) | ((key_index >> 8) & 0x0000ff00) | ((key_index >> 24) & 0x000000ff);
     memcpy(intermediate_key+4, &depth, 1);
     memcpy(intermediate_key+5, hash160, 4);
-    memcpy(intermediate_key+9, &keys->key_index, sizeof(uint32_t));
+    memcpy(intermediate_key+9, &key_index, sizeof(uint32_t));
 		
     //Private key	
     err = char_to_uint8(BIP_PRV, intermediate_key, 8);
@@ -877,11 +883,7 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
     memcpy(intermediate_key+46, keys->key_priv, PRIVKEY_LENGTH);
     gcry_md_hash_buffer(GCRY_MD_SHA256, checksum, intermediate_key, INTER_KEY);
     gcry_md_hash_buffer(GCRY_MD_SHA256, checksum, checksum, gcry_md_get_algo_dlen(GCRY_MD_SHA256));
-    printf("\nPrinting checksum key priv: \n");
-    for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x", checksum[i]);
-    }
-
+    
     memcpy(intermediate_key+INTER_KEY, checksum, CHECKSUM);
 	
     // Here private address
