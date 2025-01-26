@@ -54,12 +54,12 @@ int main(void) {
 	printf("Problem creating mnemonic, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
     }
     // Deriving keys
-    // Purpose BIP84
+    // Purpose: BIP84
     err = key_deriv(&child_keys[0], mnem->keys.key_priv, mnem->keys.chain_code, BIP84, hardened_child);
     if (err) {
 	printf("Problem deriving child key, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
     }	
-    // Coin Bitcoin
+    // Coin: Bitcoin
     err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
     if (err) {
 	printf("Problem deriving child key, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
@@ -79,8 +79,24 @@ int main(void) {
     if (err) {
 	printf("Problem deriving child key, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
     }	
-
-    
+    printf("\nMnemonic list: %s\n", mnem->mnemonic);
+    printf("\nPrinting private root key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x",mnem->keys.key_priv[i]);
+    }
+    printf("\nPrinting root compressed public key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x",mnem->keys.key_pub_comp[i]);
+    }
+    printf("\nPrinting account private key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", child_keys[2].key_priv[i]);
+    }
+    printf("\nPrinting account compressed public key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", child_keys[2].key_pub_comp[i]);
+    }
+    printf("\n");
     
     gcry_free(child_keys);
  allocerr2:
