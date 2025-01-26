@@ -85,7 +85,7 @@ int main(void) {
 	printf("%02x",mnem->keys.key_priv[i]);
     }
     printf("\nPrinting root compressed public key: \n");
-    for (uint32_t i = 0; i < 32; i++) {
+    for (uint32_t i = 0; i < 33; i++) {
 	printf("%02x",mnem->keys.key_pub_comp[i]);
     }
     printf("\nPrinting account private key: \n");
@@ -93,7 +93,7 @@ int main(void) {
 	printf("%02x", child_keys[2].key_priv[i]);
     }
     printf("\nPrinting account compressed public key: \n");
-    for (uint32_t i = 0; i < 32; i++) {
+    for (uint32_t i = 0; i < 33; i++) {
 	printf("%02x", child_keys[2].key_pub_comp[i]);
     }
     printf("\n");
