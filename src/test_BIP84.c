@@ -73,12 +73,12 @@ int main(void) {
     if (err) {
 	printf("Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
     }	
-    // Receive keys
+    // Receive keys index = 0
     err = key_deriv(&child_keys[3], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 0, normal_child);
     if (err) {
 	printf("Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
     }	
-    // Change keys
+    // Change keys index = 1
     err = key_deriv(&child_keys[4], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 1, normal_child);
     if (err) {
 	printf("Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
@@ -90,21 +90,22 @@ int main(void) {
     if (err) {
 	printf("Problem creating address from root keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
     }
-    // Purpose addresses
-    err = ext_keys_address(&keys_address[1], &child_keys[0], mnem->keys.key_pub_comp, 1, HARD_KEY_IDX+BIP84, wBIP84);
-    if (err) {
-	printf("Problem creating address from account keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
-    }  
-    // Coin addresses
-    err = ext_keys_address(&keys_address[2], &child_keys[1], (uint8_t *)(&child_keys[0].key_pub_comp), 2, HARD_KEY_IDX+COIN_BITCOIN, wBIP84);
-    if (err) {
-	printf("Problem creating address from account keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
-    }  
     // Account addresses
-    err = ext_keys_address(&keys_address[3], &child_keys[2], (uint8_t *)(&child_keys[1].key_pub_comp), 3, HARD_KEY_IDX+ACCOUNT, wBIP84);
+    err = ext_keys_address(&keys_address[1], &child_keys[2], (uint8_t *)(&child_keys[1].key_pub_comp), 3, HARD_KEY_IDX+ACCOUNT, wBIP84);
     if (err) {
 	printf("Problem creating address from account keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
+    }
+    // Receive address index = 0
+    err = ext_keys_address(&keys_address[2], &child_keys[3], (uint8_t *)(&child_keys[2].key_pub_comp), 4, 0, wBIP84);
+    if (err) {
+	printf("Problem creating address from receive keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
     }  
+    // Change addresses index = 1
+    err = ext_keys_address(&keys_address[3], &child_keys[4], (uint8_t *)(&child_keys[2].key_pub_comp), 4, 1, wBIP84);
+    if (err) {
+	printf("Problem creating address from change keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
+    }  
+
         
     printf("\nMnemonic list: %s\n", mnem->mnemonic);
     printf("Printing seed: \n");
@@ -123,7 +124,7 @@ int main(void) {
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x",mnem->keys.chain_code[i]);
     }
-    printf("\nPrinting root key_index %u: \n", mnem->keys.key_index);
+    printf("\nPrinting root key_index: %u \n", mnem->keys.key_index);
     printf("\nPrinting purpose private key: \n");
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x", child_keys[0].key_priv[i]);
@@ -136,7 +137,7 @@ int main(void) {
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x",child_keys[0].chain_code[i]);
     }
-    printf("\nPrinting purpose key_index %u: \n", child_keys[0].key_index);
+    printf("\nPrinting purpose key_index: %u \n", child_keys[0].key_index);
     printf("\nPrinting coin private key: \n");
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x", child_keys[1].key_priv[i]);
@@ -149,7 +150,7 @@ int main(void) {
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x",child_keys[1].chain_code[i]);
     }
-    printf("\nPrinting coin key_index %u: \n", child_keys[1].key_index);
+    printf("\nPrinting coin key_index: %u \n", child_keys[1].key_index);
     printf("\nPrinting account private key: \n");
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x", child_keys[2].key_priv[i]);
@@ -162,7 +163,33 @@ int main(void) {
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x",child_keys[2].chain_code[i]);
     }
-    printf("\nPrinting account key_index %u: \n", child_keys[2].key_index);
+    printf("\nPrinting account key_index: %u \n", child_keys[2].key_index);
+    printf("\nPrinting receive private key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", child_keys[3].key_priv[i]);
+    }
+    printf("\nPrinting receive compressed public key: \n");
+    for (uint32_t i = 0; i < 33; i++) {
+	printf("%02x", child_keys[3].key_pub_comp[i]);
+    }
+    printf("\nPrinting receive chain code: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x",child_keys[3].chain_code[i]);
+    }
+    printf("\nPrinting receive key_index: %u \n", child_keys[3].key_index);
+    printf("\nPrinting change private key: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x", child_keys[4].key_priv[i]);
+    }
+    printf("\nPrinting change compressed public key: \n");
+    for (uint32_t i = 0; i < 33; i++) {
+	printf("%02x", child_keys[4].key_pub_comp[i]);
+    }
+    printf("\nPrinting change chain code: \n");
+    for (uint32_t i = 0; i < 32; i++) {
+	printf("%02x",child_keys[4].chain_code[i]);
+    }
+    printf("\nPrinting change key_index: %u \n", child_keys[4].key_index);
     
     printf("\nPrinting key addresses: \n");
     printf("%s\n", keys_address[0].xpriv);    

@@ -703,17 +703,39 @@ gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t
 	*index = key_index;
     }
     child_keys->key_index = *index;
-
     *index = ((*index << 24) & 0xff000000) | ((*index << 8) & 0x00ff0000) | ((*index >> 8) & 0x0000ff00) | ((*index >> 24) & 0x000000ff);
-    swap_priv_key[0] = 0x00;
-    memcpy(swap_priv_key+1, parent_priv_key, PRIVKEY_LENGTH);
-    memcpy(swap_priv_key+PUBKEY_LENGTH, index, sizeof(uint32_t));
+
+    if (hardened == hardened_child) {
+	swap_priv_key[0] = 0x00;
+	memcpy(swap_priv_key+1, parent_priv_key, PRIVKEY_LENGTH);
+	memcpy(swap_priv_key+PUBKEY_LENGTH, index, sizeof(uint32_t));
 	
-    key_buff[1].len = 37;
-    key_buff[1].data = swap_priv_key;
-    key_buff[0].len = CHAINCODE_LENGTH;
-    key_buff[0].data = parent_chain_code;
+	key_buff[1].len = 37;
+	key_buff[1].data = swap_priv_key;
+	key_buff[0].len = CHAINCODE_LENGTH;
+	key_buff[0].data = parent_chain_code;
+    }
+    else {
+	key_pair_t *inter_public = (key_pair_t *)gcry_calloc_secure(1, sizeof(key_pair_t));
+	if (inter_public == NULL) {
+	    err = gcry_error_from_errno(ENOMEM);
+	    goto allocerr11;
+	}
+	err = pub_from_priv(inter_public->key_pub, inter_public->key_pub_comp, parent_priv_key);
+	if (err) {
+	    fprintf(stderr, "Failed to derive public from private parent key\n");
+	}
+	memcpy(swap_priv_key, inter_public->key_pub_comp, PUBKEY_LENGTH);
+	memcpy(swap_priv_key+PUBKEY_LENGTH, index, sizeof(uint32_t));
 	
+	key_buff[1].len = 37;
+	key_buff[1].data = swap_priv_key;
+	key_buff[0].len = CHAINCODE_LENGTH;
+	key_buff[0].data = parent_chain_code;
+
+	gcry_free(inter_public);
+    }
+    
     err = gcry_md_hash_buffers(GCRY_MD_SHA512, GCRY_MD_FLAG_HMAC, intermediate_key, key_buff, 2);
     if (err) {
 	fprintf(stderr, "Failed to HMAC child private key\n");
