@@ -26,7 +26,7 @@ int main(int arg, char *arv[]) {
     
     err = create_wallet_db("wallet");
     if (err) {
-		fprintf(stderr, "Problem creating database file, exiting\n");
+	fprintf(stderr, "Problem creating database file, exiting\n");
     }
     
     exit(err);	
