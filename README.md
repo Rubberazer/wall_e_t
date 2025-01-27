@@ -16,3 +16,6 @@ In order to compile, you will need to install libgcrypt and SQLite first e.g. on
 
     sudo apt install libgcrypt20-dev
     sudo apt install libsqlite3-dev	
+
+## Test vectors
+Some but not all of the test vectors on the concerned BIPs and especially here: https://iancoleman.io/bip39/ -extremely useful site.
