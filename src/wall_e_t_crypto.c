@@ -154,7 +154,6 @@ gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length) 
 }			   
 
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
-#define STRING_SWAP 113
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_mpi_t mpi_base58 = NULL;
     gcry_mpi_t mpi_key = NULL;
@@ -195,7 +194,7 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr4;
     }
-    string_swap = (char *)gcry_calloc_secure(STRING_SWAP, sizeof(char));
+    string_swap = (char *)gcry_calloc_secure(char_length, sizeof(char));
     if (string_swap == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr5;
@@ -235,10 +234,10 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	    fprintf(stderr, "Failed operation key mod 58\n");
 	    goto allocerr7;
 	}
-	memcpy(string_swap+STRING_SWAP-i, &base58_arr[*uint8_swap], 1);	
+	memcpy(string_swap+char_length-i, &base58_arr[*uint8_swap], 1);	
 	mpi_key = gcry_mpi_set(mpi_key, mpi_result);
 	if (!gcry_mpi_cmp_ui(mpi_key, 0)) {
-	    counter = STRING_SWAP-i;
+	    counter = char_length-i;
 	    break;
 	}
     }
@@ -258,7 +257,6 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
  allocerr2:
     gcry_mpi_release(mpi_base58);
  allocerr1:
-#undef STRING_SWAP
     return err;
 }
 
