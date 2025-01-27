@@ -91,17 +91,17 @@ int main(void) {
 	printf("Problem creating address from root keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
     }
     // Purpose addresses
-    err = ext_keys_address(&keys_address[1], &child_keys[0], mnem->keys.key_pub_comp, 1, 2147483648+84, wBIP84);
+    err = ext_keys_address(&keys_address[1], &child_keys[0], mnem->keys.key_pub_comp, 1, HARD_KEY_IDX+BIP84, wBIP84);
     if (err) {
 	printf("Problem creating address from account keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
     }  
     // Coin addresses
-    err = ext_keys_address(&keys_address[2], &child_keys[1], (uint8_t *)(&child_keys[0].key_pub_comp), 2, 2147483648, wBIP84);
+    err = ext_keys_address(&keys_address[2], &child_keys[1], (uint8_t *)(&child_keys[0].key_pub_comp), 2, HARD_KEY_IDX+COIN_BITCOIN, wBIP84);
     if (err) {
 	printf("Problem creating address from account keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
     }  
     // Account addresses
-    err = ext_keys_address(&keys_address[3], &child_keys[2], (uint8_t *)(&child_keys[1].key_pub_comp), 3, 2147483648, wBIP84);
+    err = ext_keys_address(&keys_address[3], &child_keys[2], (uint8_t *)(&child_keys[1].key_pub_comp), 3, HARD_KEY_IDX+ACCOUNT, wBIP84);
     if (err) {
 	printf("Problem creating address from account keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
     }  
@@ -170,16 +170,15 @@ int main(void) {
     printf("%s\n", keys_address[1].xpriv);
     printf("%s\n", keys_address[1].xpub);
     printf("%s\n", keys_address[2].xpriv);
-    printf("key length %lu\n", strlen(keys_address[2].xpriv));
     printf("%s\n", keys_address[2].xpub);
-    printf("key length %lu\n", strlen(keys_address[2].xpriv));
     printf("%s\n", keys_address[3].xpriv);
-    printf("key length %lu\n", strlen(keys_address[3].xpriv));
     printf("%s\n", keys_address[3].xpub);
-    printf("key length %lu\n", strlen(keys_address[3].xpub));
+    printf("\n");
 
- allocerr3:
+
     gcry_free(keys_address);
+ allocerr3:
+    gcry_free(child_keys);
  allocerr2:
     gcry_free(mnem);
  allocerr1:

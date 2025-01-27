@@ -164,8 +164,8 @@ typedef struct {
 } mnemonic_t;
 
 typedef struct {
-    char xpriv[200];
-    char xpub[200];
+    char xpriv[113];
+    char xpub[113];
 } key_address_t;
 
 typedef struct {

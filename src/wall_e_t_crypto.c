@@ -154,7 +154,7 @@ gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length) 
 }			   
 
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
-#define STRING_SWAP 200
+#define STRING_SWAP 113
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_mpi_t mpi_base58 = NULL;
     gcry_mpi_t mpi_key = NULL;
@@ -169,8 +169,8 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
-    if (base58 == NULL || char_length < 1) {
-	fprintf(stderr, "base58 can´t be empty\n");
+    if (base58 == NULL) {
+	fprintf(stderr, "base58 can´t be NULL\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }	
@@ -219,7 +219,6 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	goto allocerr7;
     }
 	
-    size_t counter = 0;
     for (uint32_t i = 0; i < uint8_length; i++) {
 	if (key[i] == 0x00) {
 	    strcpy(base58+i, "1");
@@ -227,7 +226,8 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	else
 	    break;
     }
-	
+
+    uint32_t counter = 0;
     for (uint32_t i = 0;; i++) {
 	gcry_mpi_div(mpi_result, mpi_mod, mpi_key, mpi_base58, -1);
 	err = gcry_mpi_get_ui(uint8_swap, mpi_mod);
@@ -235,15 +235,16 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	    fprintf(stderr, "Failed operation key mod 58\n");
 	    goto allocerr7;
 	}
-	memcpy(string_swap+STRING_SWAP-i, &base58_arr[*uint8_swap], 1);		
+	memcpy(string_swap+STRING_SWAP-i, &base58_arr[*uint8_swap], 1);	
 	mpi_key = gcry_mpi_set(mpi_key, mpi_result);
 	if (!gcry_mpi_cmp_ui(mpi_key, 0)) {
 	    counter = STRING_SWAP-i;
 	    break;
 	}
     }
-    strncpy(base58+strlen(base58), string_swap+counter, char_length-strlen(base58));
 
+    strncpy(base58+strlen(base58), string_swap+counter, char_length-strlen(base58));
+    	    
  allocerr7:
     gcry_free(uint8_swap);
  allocerr6:
@@ -880,10 +881,10 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 	goto allocerr4;
     }	
     memcpy(intermediate_key+13, keys->chain_code, CHAINCODE_LENGTH);
+    memset(intermediate_key+45, 0, 1);
     memcpy(intermediate_key+46, keys->key_priv, PRIVKEY_LENGTH);
     gcry_md_hash_buffer(GCRY_MD_SHA256, checksum, intermediate_key, INTER_KEY);
     gcry_md_hash_buffer(GCRY_MD_SHA256, checksum, checksum, gcry_md_get_algo_dlen(GCRY_MD_SHA256));
-    
     memcpy(intermediate_key+INTER_KEY, checksum, CHECKSUM);
 	
     // Here private address
