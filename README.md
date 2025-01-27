@@ -19,3 +19,10 @@ In order to compile, you will need to install libgcrypt and SQLite first e.g. on
 
 ## Test vectors
 Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way.
+
+## Done so far
+Probably the most useful thing you can get at this point is just to compile the tests as tehre is not wallet itself yet:
+
+    make tests
+
+This above will produce 4 executable files, if you run this one: ./test_BIP84 what you will get is basically a full derived BIP84 wallet up to the changes addresses 
