@@ -25,4 +25,4 @@ Probably the most useful thing you can get at this point is just to compile the 
 
     make tests
 
-This above will produce 4 executable files, if you run this one: ./test_BIP84 what you will get is basically a full derived BIP84 wallet up to the changes addresses, read the code to see what is going on. 
+This above will produce 4 executable files, if you run this one: ./test_BIP84 what you will get is basically a full BIP84 wallet derived up to the change addresse(s), read the code to see what is going on. 
