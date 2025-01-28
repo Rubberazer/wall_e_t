@@ -196,6 +196,11 @@ typedef enum {
     bech32 = 1,
     bech32m = 0x2bc830a3
 } encoding;
+
+typedef enum {
+    password,
+    passphrase
+} password_t;
 	
 /* Initializing libgcrypt */
 gcry_error_t libgcrypt_initializer(void);
@@ -243,7 +248,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length, uint8_t *priv_key);
 
 /* Getting passwords from user on terminal */
-int32_t getpasswd(char * passwd);
+int32_t getpasswd(char *passwd, password_t pass_type);
 
 /* Utility yes/no menu */
 int32_t yes_no_menu(void);

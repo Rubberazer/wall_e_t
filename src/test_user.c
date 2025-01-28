@@ -31,7 +31,7 @@ int main(int arg, char *arv[]) {
 	goto allocerr1;
     }
 	
-    getpasswd(passwd);
+    getpasswd(passwd, password);
 	
     gcry_free(passwd);
  allocerr1:
