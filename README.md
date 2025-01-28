@@ -18,7 +18,7 @@ In order to compile, you will need to install libgcrypt and SQLite first e.g. on
     sudo apt install libsqlite3-dev	
 
 ## Test vectors
-Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way.
+Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way. Also, Greg's site is an absolute must, highly recommended: https://learnmeabitcoin.com/.
 
 ## Done so far
 Probably the most useful thing you can do at this point is just to compile the tests:

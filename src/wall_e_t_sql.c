@@ -65,12 +65,14 @@ int32_t create_wallet_db(char *db_name) {
 	}
     }
 
-    // Create master table
-    char *query = "CREATE TABLE main ("
-	"id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    // Create account table
+    char *query = "CREATE TABLE account ("
+	"id INTEGER PRIMARY KEY,"
 	"private_key TEXT,"
-	"chain_code TEXT,"
-	"public_key TEXT"
+	"private_key_address TEXT,"
+	"public_key TEXT,"
+	"public_key_address TEXT"
+	"chain_code TEXT"
 	");";
     
     size_t query_bytes = strlen(query);
@@ -92,6 +94,7 @@ int32_t create_wallet_db(char *db_name) {
     query = "CREATE TABLE receive ("
 	"id INTEGER PRIMARY KEY,"
 	"private_key TEXT,"
+	"private_key_address TEXT,"
 	"public_key TEXT,"
 	"address TEXT"
 	");";
@@ -116,6 +119,7 @@ int32_t create_wallet_db(char *db_name) {
     query = "CREATE TABLE change ("
 	"id INTEGER PRIMARY KEY,"
 	"private_key TEXT,"
+	"private_key_address TEXT,"
 	"public_key TEXT,"
 	"address TEXT"
 	");";
