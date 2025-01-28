@@ -48,14 +48,20 @@ int32_t yes_no_menu(void) {
 int32_t getpasswd(char *passwd, password_t pass_type) {
     int32_t err = 0;
     char pass[70] = "";
+    uint32_t pass_max = 0;
+    uint32_t pass_min = 0;
     struct termios term, term_old;
     
     switch (pass_type){
     case password:
 	strcpy(pass, "password");
+	pass_max = 64;
+	pass_min = 10;
 	break;
     case passphrase:
 	strcpy(pass, "passphrase");
+	pass_max = 20;
+	pass_min = 0;
 	break;
     default:
 	fprintf (stderr, "pass_type should be either: password or passphrase\n");
@@ -73,16 +79,16 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
 	return err;
     }
 		
-    while (passwd == NULL || strlen(passwd) < 10 || strlen(passwd) > 64) {
+    while (passwd == NULL || strlen(passwd) < pass_min || strlen(passwd) > pass_max) {
 	uint32_t pos = 0;
-	fprintf(stdout, "Enter %s, this %s will encrypt your wallet's Private keys, it should be a maximum of 64 and a minimum of 10 characters long:\n", pass, pass);
-	fgets(passwd, 66, stdin);
+	fprintf(stdout, "Enter %s, this %s will encrypt your wallet's Private keys, it should be a maximum of %u and a minimum of %u characters long:\n", pass, pass, pass_max, pass_min);
+	fgets(passwd, pass_max+1, stdin);
 	pos = strcspn(passwd, "\n");
 	passwd[pos] = 0;
-	if (strlen(passwd) > 64) {
+	if (strlen(passwd) > pass_max) {
 	    fprintf(stdout, "P%s is too long, please try again\n", &pass[1]);
 	}
-	else if (strlen(passwd) < 10) {
+	else if (strlen(passwd) < pass_min) {
 	    fprintf(stdout, "P%s is too short, please try again\n", &pass[1]);
 	}
 	else if (passwd == NULL) {
