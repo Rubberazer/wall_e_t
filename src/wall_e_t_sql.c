@@ -37,13 +37,19 @@ int32_t create_wallet_db(char *db_name) {
     err = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READONLY, NULL);
     if (err == SQLITE_OK) {
 	err = sqlite3_close_v2(pdb);
-	fprintf(stdout, "Database file: %s already exists, do you want to overwrite it? (yes/no)\n", db_name);
+	fprintf(stdout, "Database file: '%s.db' already exists, do you want to overwrite it? (yes/no)\n", db_name);
 	err = yes_no_menu();
 	if (err == 2 || !err) {
 	    fprintf(stdout, "Nothing changed\n");
 	    return 0;
 	}
 	else {
+	    fprintf(stdout, "Are you sure? (yes/no)\n");
+	    err = yes_no_menu();
+	    if (err == 2 || !err) {
+		fprintf(stdout, "Nothing changed\n");
+		return 0;
+	    }  
 	    err = sqlite3_close_v2(pdb);
 	    err = remove(path);
 	    if (err) {
