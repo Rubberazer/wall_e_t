@@ -31,4 +31,3 @@ int main(int arg, char *arv[]) {
     
     exit(err);	
 }
-
