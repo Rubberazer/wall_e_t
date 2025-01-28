@@ -28,6 +28,5 @@ int main(int arg, char *arv[]) {
     if (err) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
     }
-    
     exit(err);	
 }
