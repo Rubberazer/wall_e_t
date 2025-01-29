@@ -198,6 +198,11 @@ typedef enum {
 } encoding;
 
 typedef enum {
+    mainnet,
+    testnet
+} net_t;
+
+typedef enum {
     password,
     passphrase
 } password_t;
@@ -237,6 +242,9 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 
 /* Create checksum for a bech32 address */
 gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, size_t interm_length, encoding bech_type, uint8_t *checksum);
+
+/* WIF code of private keys, compression by default */
+gcry_error_t WIF_encode(char *WIF, size_t char_length, uint8_t *priv_key, net_t bitcoin_net);
 
 /* Encrypt a buffer with the AES256-CBC algorithm */
 gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password);

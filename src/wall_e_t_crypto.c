@@ -1036,6 +1036,64 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     return err;
 }
 
+gcry_error_t WIF_encode(char *WIF, size_t char_length, uint8_t *priv_key, net_t bitcoin_net) {
+    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    uint8_t *s_buff = NULL;
+    uint8_t *checksum = NULL;
+    
+    if (WIF == NULL || char_length < 52) {
+	fprintf(stderr, "WIF string can't be NULL or less than 52 characters length\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (priv_key == NULL) {
+	fprintf(stderr, "priv_key can't be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+
+    s_buff = (uint8_t *)gcry_calloc_secure(38, sizeof(uint8_t));
+    if (s_buff == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr1;
+    }
+    checksum = (uint8_t *)gcry_calloc_secure(32, sizeof(uint8_t));
+    if (checksum == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr2;
+    }
+
+    switch (bitcoin_net) {
+    case mainnet: s_buff[0] = 0x80;
+	break;
+    case testnet: s_buff[0] = 0xef;
+	break;
+    default:
+	fprintf(stderr, "bitcoin_net should be either: mainnet or testnet\n");
+	err = gcry_error_from_errno(EINVAL);
+	goto allocerr2;
+    }
+    
+    memcpy(s_buff+1, priv_key, PRIVKEY_LENGTH);
+    s_buff[33] = 0x01;
+    
+    gcry_md_hash_buffer(GCRY_MD_SHA256, checksum, s_buff, PRIVKEY_LENGTH+2);
+    gcry_md_hash_buffer(GCRY_MD_SHA256, checksum, checksum, gcry_md_get_algo_dlen(GCRY_MD_SHA256));
+    memcpy(s_buff+34, checksum, CHECKSUM);
+    
+    err = base58_encode(WIF, char_length, s_buff, 38);
+    if (err) {
+	fprintf(stderr, "Failed to convert intermediate priv key to base58 format\n");
+	goto allocerr2;
+    }
+    
+    gcry_free(checksum);
+ allocerr2:
+    gcry_free(s_buff);
+ allocerr1:
+    return err;
+}
+
 gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
