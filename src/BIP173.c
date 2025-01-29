@@ -146,7 +146,6 @@ gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, siz
 
 /* Verify a checksum. */
 encoding verify_checksum(const char *hrp, char *bech_address) { 
-    //gcry_error_t err = GPG_ERR_NO_ERROR;
     encoding verif = invalid;
     uint8_t *swap_address = NULL;
     uint8_t *swap_hrp = NULL;
