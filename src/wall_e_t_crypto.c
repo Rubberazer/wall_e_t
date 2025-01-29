@@ -153,6 +153,27 @@ gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length) 
     return err;
 }			   
 
+gcry_error_t reverse_bytes(uint8_t *output, uint8_t *input, size_t length) {
+    static gcry_error_t err = GPG_ERR_NO_ERROR;
+
+    if (input == NULL || output == NULL) {
+	fprintf (stderr, "input and output can't be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (length < 2) {
+	fprintf (stderr, "length can't be less than 2 bytes\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    
+    for (size_t i = 0; i < length; i++) {
+	output[i] = input[length-1-i];
+    }
+    
+    return err;
+}
+
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
     static gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_mpi_t mpi_base58 = NULL;

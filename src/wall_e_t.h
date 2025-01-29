@@ -243,6 +243,9 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 /* Create checksum for a bech32 address */
 gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, size_t interm_length, encoding bech_type, uint8_t *checksum);
 
+/* Verify Bech32 address is valid*/
+encoding verify_checksum(const char *hrp, char *bech_address);
+
 /* WIF code of private keys, compression by default */
 gcry_error_t WIF_encode(char *WIF, size_t char_length, uint8_t *priv_key, net_t bitcoin_net);
 
@@ -255,14 +258,14 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 /* Sign a buffer with the ECDSA algorithm */
 gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length, uint8_t *priv_key);
 
+/* Reverse array byte by byte */
+gcry_error_t reverse_bytes(uint8_t *output, uint8_t *input, size_t length);
+
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char *passwd, password_t pass_type);
 
 /* Utility yes/no menu */
 int32_t yes_no_menu(void);
-
-/* Verify Bech32 address is valid*/
-encoding verify_checksum(const char *hrp, char *bech_address);
 
 /* Create SQLite database file with wallet tables*/
 int32_t create_wallet_db(char *db_name);
