@@ -26,7 +26,7 @@ int32_t yes_no_menu(void) {
     int32_t err = 0;
     char answer[5] = "";
     
-    while (strcmp("yes", answer) || strcmp("no", answer) || strcmp("Yes", answer) || strcmp("No", answer)) {
+    while (1) {
 	uint32_t pos = 0;
 	fgets(answer, 5, stdin);
 	pos = strcspn(answer, "\n");
