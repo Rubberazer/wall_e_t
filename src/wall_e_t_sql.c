@@ -157,7 +157,7 @@ int32_t create_wallet_db(char *db_name) {
     return err;
 }
 
-int32_t query_count(char *db_name, char *table, char *key, char * condition, num_values_t num_values) {
+int32_t query_count(char *db_name, char *table, char *key, char * condition) {
     static int32_t err = 0;
     static int32_t row_count = 0;
     
@@ -166,28 +166,26 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition, num
 	err = -1;
 	return err;
     }
-
+    if (db_name == NULL || table == NULL) {
+	fprintf(stderr, "db_name and table can't be NULL.\n");
+	err = -1;
+	return err;
+    }
+    if (condition == NULL) {
+	condition = "";
+    }
+    
     sqlite3 *pdb = NULL;
     char path[200] = "./";
     strcat(path, db_name);
     strcat(path, ".db");
 
     // Begin SELECT query
-    char num_query[300] = "";
     char query[300] = "SELECT COUNT(*) ";
     strcat(query, key);
     strcat(query, " FROM ");
     strcat(query, table);
-    
-    switch (num_values) {
-    case all: strcpy(num_query, " WHERE ");
-	break;
-    default:
-	fprintf (stderr, "num_values can only be: all for counting\n");
-	err = -1;
-	return err; 
-    }
-    strcat(query, num_query);
+    strcat(query, " ");
     strcat(query, condition);
     strcat(query, ";");
     size_t query_bytes = strlen(query);

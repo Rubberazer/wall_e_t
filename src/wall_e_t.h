@@ -288,7 +288,7 @@ int32_t yes_no_menu(void);
 int32_t create_wallet_db(char *db_name);
 
 /* Return number of values for database query*/
-int32_t query_count(char *db_name, char *table, char *key, char * condition, num_values_t num_values);
+int32_t query_count(char *db_name, char *table, char *key, char * condition);
 
 /* Read values from database*/
 query_return_t read_key(char *db_name, char *table, char *key, num_values_t num_values, encryption_t decript);

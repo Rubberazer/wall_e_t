@@ -31,7 +31,7 @@ int main(int arg, char *arv[]) {
 	}*/
     
 
-    err = query_count("wallet", "account", "public_key_address", "id=0", all);
+    err = query_count("wallet", "account", "public_key_address", NULL);
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);
