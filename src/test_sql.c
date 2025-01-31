@@ -22,12 +22,32 @@
 #include <wall_e_t.h>
 
 int main(int arg, char *arv[]) {
-    int32_t err = 0;
-    
+    int32_t err = 0;   
+
+    /*
     err = create_wallet_db("wallet");
     if (err) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
+	}*/
+    
+
+    err = query_count("wallet", "account", "public_key_address", "id=0", all);
+    if (err < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	exit(err);
+    }
+    printf("Number of rows returned: %d\n", err);
+
+    /*
+	return_query = read_key("wallet", "account", "public_key_address", all, decrypted);
+	if (return_query.index < 0) {
+	fprintf(stderr, "Problem with query.\n");
+	exit(return_query.count);
     }
     
-    exit(err);	
+    for (size_t i =0; i < return_query.index; i++) {
+	printf("value[%lu]: %s \n", i, return_query.value);
+	}*/
+    
+    exit(EXIT_SUCCESS);	
 }

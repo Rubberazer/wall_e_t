@@ -175,6 +175,11 @@ typedef struct {
     char DER[142];
 } ECDSA_sign_t;
 
+typedef struct {
+    uint32_t index;
+    uint8_t value[113];
+} query_return_t;
+
 typedef enum {
     normal_child,
     hardened_child
@@ -206,7 +211,19 @@ typedef enum {
     password,
     passphrase
 } password_t;
-	
+
+typedef enum {
+    all,
+    last,
+    first,
+    id
+} num_values_t;
+
+typedef enum {
+    decrypted,
+    encrypted
+} encryption_t;  
+
 /* Initializing libgcrypt */
 gcry_error_t libgcrypt_initializer(void);
 
@@ -269,5 +286,11 @@ int32_t yes_no_menu(void);
 
 /* Create SQLite database file with wallet tables*/
 int32_t create_wallet_db(char *db_name);
+
+/* Return number of values for database query*/
+int32_t query_count(char *db_name, char *table, char *key, char * condition, num_values_t num_values);
+
+/* Read values from database*/
+query_return_t read_key(char *db_name, char *table, char *key, num_values_t num_values, encryption_t decript);
 
 #endif  // wall_e_t_h__
