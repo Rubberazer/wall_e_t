@@ -181,9 +181,9 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
     strcat(path, ".db");
 
     // Begin SELECT query
-    char query[300] = "SELECT COUNT(*) ";
+    char query[300] = "SELECT COUNT(";
     strcat(query, key);
-    strcat(query, " FROM ");
+    strcat(query, ") FROM ");
     strcat(query, table);
     strcat(query, " ");
     strcat(query, condition);
@@ -234,9 +234,8 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
     
     return row_count;
 }
-
 /*
-  query_return_t *read_key(char *db_name, char *table, char *key, num_values_t num_values, encryption_t decrypt) {
+query_return_t *read_key(char *db_name, char *table, char *key, num_values_t num_values, encryption_t decrypt) {
     static query_return_t query_return;
     
     if (strlen(db_name) > 54) {
@@ -251,8 +250,8 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
     strcat(path, ".db");
 
     // Begin SELECT query
-    char num_query[300] = "";
-    char query[300] = "SELECT "; //id FROM account ORDER BY id DESC LIMIT 1;";
+    char num_query[500] = "";
+    char query[500] = "SELECT "; //id FROM account ORDER BY id DESC LIMIT 1;";
     strcat(query, key);
     strcat(query, " FROM ");
     strcat(query, table);
@@ -271,7 +270,6 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
     }
     strcat(query, num_query);
     size_t query_bytes = strlen(query);
-
     // End Query
     
     query_return.index = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READONLY, NULL);
