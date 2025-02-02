@@ -248,7 +248,7 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 /* Create checksum for a bech32 address */
 gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, size_t interm_length, encoding bech_type, uint8_t *checksum);
 
-/* Verify Bech32 address is valid*/
+/* Verify whether Bech32 address is valid or not */
 encoding verify_checksum(const char *hrp, char *bech_address);
 
 /* WIF code of private keys, compression by default */
@@ -272,13 +272,16 @@ int32_t getpasswd(char *passwd, password_t pass_type);
 /* Utility yes/no menu */
 int32_t yes_no_menu(void);
 
-/* Create SQLite database file with wallet tables*/
+/* Create SQLite database file with wallet tables */
 int32_t create_wallet_db(char *db_name);
 
-/* Return number of values for database query*/
+/* Return number of values for database query */
 int32_t query_count(char *db_name, char *table, char *key, char * condition);
 
-/* Read values from database*/
+/* Read values from database */
 int32_t read_key(query_return_t *query_return, char *db_name, char *table, char *key, char *condition);
 
+/* Insert values & index in the database*/
+int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_name, char *table, char *key);
+    
 #endif  // wall_e_t_h__

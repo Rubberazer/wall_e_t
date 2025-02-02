@@ -22,15 +22,21 @@
 #include <wall_e_t.h>
 
 int32_t create_wallet_db(char *db_name) {
-    static int32_t err = 0;
-
+    int32_t err = 0;
+    sqlite3 *pdb = NULL;
+    char path[200] = {0};
+    char query[500] = {0};
+    size_t query_bytes = 0;
+    sqlite3_stmt *pstmt = NULL;
+    const char **query_tail = {0};
+    
     if (strlen(db_name) > 54) {
 	fprintf(stderr, "Database file name too long.\n");
 	err = -1;
 	return err;
     }
-    sqlite3 *pdb = NULL;
-    char path[200] = "./";
+
+    strcpy(path, "./");
     strcat(path, db_name);
     strcat(path, ".db");
     
@@ -72,19 +78,13 @@ int32_t create_wallet_db(char *db_name) {
     }
 
     // Create account table
-    char *query = "CREATE TABLE account ("
-	"id INTEGER PRIMARY KEY,"
-	"private_key TEXT,"
-	"private_key_address TEXT,"
-	"public_key TEXT,"
-	"public_key_address TEXT"
-	"chain_code TEXT"
-	");";
+    strcpy(query, "CREATE TABLE account ("
+	   "id INTEGER PRIMARY KEY,"
+	   "private_key TEXT"
+	   ");");
     
-    size_t query_bytes = strlen(query);
-    sqlite3_stmt *pstmt = NULL;
-    const char **query_tail = {0};
-    
+    query_bytes = strlen(query);
+ 
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
     if(err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
@@ -97,13 +97,11 @@ int32_t create_wallet_db(char *db_name) {
     }
 
     // Create receive table
-    query = "CREATE TABLE receive ("
-	"id INTEGER PRIMARY KEY,"
-	"private_key TEXT,"
-	"private_key_address TEXT,"
-	"public_key TEXT,"
-	"address TEXT"
-	");";
+    memset(query, 0, strlen(query));
+    strcpy(query, "CREATE TABLE receive ("
+	   "id INTEGER PRIMARY KEY,"
+	   "address TEXT"
+	   ");");
 
     err = sqlite3_reset(pstmt);
     if(err != SQLITE_OK) {
@@ -122,13 +120,11 @@ int32_t create_wallet_db(char *db_name) {
     }
 
     // Create change table
-    query = "CREATE TABLE change ("
-	"id INTEGER PRIMARY KEY,"
-	"private_key TEXT,"
-	"private_key_address TEXT,"
-	"public_key TEXT,"
-	"address TEXT"
-	");";
+    memset(query, 0, strlen(query));
+    strcpy(query, "CREATE TABLE change ("
+	   "id INTEGER PRIMARY KEY,"
+	   "address TEXT"
+	   ");");
 
     err = sqlite3_reset(pstmt);
     if(err != SQLITE_OK) {
@@ -158,8 +154,14 @@ int32_t create_wallet_db(char *db_name) {
 }
 
 int32_t query_count(char *db_name, char *table, char *key, char * condition) {
-    static int32_t err = 0;
-    static int32_t row_count = 0;
+    int32_t err = 0;
+    sqlite3 *pdb = NULL;
+    char path[200] = {0};
+    char query[300] = {0};
+    size_t query_bytes = 0;
+    sqlite3_stmt *pstmt = NULL;
+    const char **query_tail = {0};
+    int32_t row_count = 0;
     
     if (strlen(db_name) > 54) {
 	fprintf(stderr, "Database file name too long.\n");
@@ -175,20 +177,19 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
 	condition = "";
     }
     
-    sqlite3 *pdb = NULL;
-    char path[200] = "./";
+    strcpy(path, "./");
     strcat(path, db_name);
     strcat(path, ".db");
 
     // Begin SELECT query
-    char query[300] = "SELECT COUNT(";
+    strcpy(query, "SELECT COUNT(");
     strcat(query, key);
     strcat(query, ") FROM ");
     strcat(query, table);
     strcat(query, " ");
     strcat(query, condition);
     strcat(query, ";");
-    size_t query_bytes = strlen(query);
+    query_bytes = strlen(query);
     // End Query
 
     err = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READONLY, NULL);
@@ -196,17 +197,13 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
 	fprintf(stderr, "Not possible to open database file: %s", db_name);
 	return -err;
     }
-    
-    sqlite3_stmt *pstmt = NULL;
-    const char **query_tail = {0};
-    
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
     if(err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
 	return -err;
     }
     err = sqlite3_step(pstmt);
-    if (err != SQLITE_ROW) {
+    if (err == SQLITE_ERROR) {
 	fprintf(stderr, "Not possible to execute query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
 	return -err;
     }
@@ -217,7 +214,6 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
 	fprintf(stderr, "Query returned no data\n");
 	return -err;
     }
-
     row_count = sqlite3_column_int(pstmt,0);
     
     err = sqlite3_finalize(pstmt);
@@ -235,8 +231,15 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
 }
 
 int32_t read_key(query_return_t *query_return, char *db_name, char *table, char *key, char *condition) {
-    static int32_t err = 0;
-
+    int32_t err = 0;
+    sqlite3 *pdb = NULL;
+    char path[200] = {0};
+    char query[300] = {0};
+    size_t query_bytes = 0;
+    sqlite3_stmt *pstmt = NULL;
+    const char **query_tail = {0};
+    uint32_t count = 0;
+    
     if (strlen(db_name) > 54) {
 	fprintf(stderr, "Database file name too long.\n");
 	err = -1;
@@ -251,31 +254,26 @@ int32_t read_key(query_return_t *query_return, char *db_name, char *table, char 
 	condition = "";
     }
     
-    sqlite3 *pdb = NULL;
-    char path[200] = "./";
+    strcpy(path, "./");
     strcat(path, db_name);
     strcat(path, ".db");
 
     // Begin SELECT query
-    char query[300] = "SELECT id, ";
+    strcpy(query, "SELECT id, ");
     strcat(query, key);
     strcat(query, " FROM ");
     strcat(query, table);
     strcat(query, " ");
     strcat(query, condition);
     strcat(query, ";");
-    size_t query_bytes = strlen(query);
+    query_bytes = strlen(query);
     // End Query
 
     err = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READONLY, NULL);
     if (err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to open database file: %s", db_name);
 	return -err;
-    }
-    
-    sqlite3_stmt *pstmt = NULL;
-    const char **query_tail = {0};
-    
+    }        
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
     if(err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
@@ -287,8 +285,6 @@ int32_t read_key(query_return_t *query_return, char *db_name, char *table, char 
 	return -err;
     }
 
-    // Here we have to work
-    uint32_t count = 0;
     while (err == SQLITE_ROW) {
 	query_return[count].id = sqlite3_column_int(pstmt, 0);
 	strcpy(query_return[count].value, (char *)sqlite3_column_text(pstmt, 1));
@@ -300,6 +296,92 @@ int32_t read_key(query_return_t *query_return, char *db_name, char *table, char 
 	}
     }
 
+    err = sqlite3_finalize(pstmt);
+    if (err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to destroy statement: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return -err;
+    }
+    err = sqlite3_close_v2(pdb);
+    if (err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to close open database file: %s\n", db_name);
+	return -err;
+    }	
+    
+    return err;
+}
+
+int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_name, char *table, char *key) {
+    int32_t err = 0;
+    sqlite3 *pdb = NULL;
+    char path[200] = {0};
+    char query[300] = {0};
+    size_t query_bytes = 0;
+    sqlite3_stmt *pstmt = NULL;
+    const char **query_tail = {0};
+    char *errmsg = NULL;
+    
+    if (strlen(db_name) > 54) {
+	fprintf(stderr, "Database file name too long.\n");
+	err = -1;
+	return err;
+    }
+    if (db_name == NULL || table == NULL) {
+	fprintf(stderr, "db_name and table can't be NULL.\n");
+	err = -1;
+	return err;
+    }
+    
+    strcpy(path, "./");
+    strcat(path, db_name);
+    strcat(path, ".db");
+
+    err = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READWRITE, NULL);
+    if (err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to open database file: %s", db_name);
+	return -err;
+    }        
+
+    // Begin SELECT query
+    strcpy(query, "INSERT INTO ");
+    strcat(query, table);
+    strcat(query, " (id, ");
+    strcat(query, key);
+    strcat(query, ") VALUES(?, ?");
+    strcat(query, ");");
+    query_bytes = strlen(query);
+    // End Query
+
+    printf("%s\n", query);
+    
+    err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
+    if(err != SQLITE_OK) {
+	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
+	return -err;
+    }
+    
+    sqlite3_exec(pdb, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
+    for (uint32_t i = 0; i < num_values; i++) {
+	err = sqlite3_bind_int64(pstmt, 1, query_insert[i].id);
+	if (err != SQLITE_OK) {
+	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
+	    return -err;
+	}
+	err =sqlite3_bind_text(pstmt, 2, query_insert[i].value, -1, SQLITE_TRANSIENT);
+	if (err != SQLITE_OK) {
+	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
+	    return -err;
+	}
+	
+	err = sqlite3_step(pstmt);	
+	if (err == SQLITE_ERROR) {
+	    fprintf(stderr, "Not possible to execute query: %s with error number %d\n", query, err);
+	    return -err
+	}
+	sqlite3_clear_bindings(pstmt);
+	sqlite3_reset(pstmt);
+    }
+    sqlite3_exec(pdb, "END TRANSACTION", NULL, NULL, &errmsg);
+    
     err = sqlite3_finalize(pstmt);
     if (err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to destroy statement: %s with error: %s\n", query, sqlite3_errmsg(pdb));

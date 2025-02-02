@@ -22,24 +22,45 @@
 #include <wall_e_t.h>
 
 int main(int arg, char *arv[]) {
+    //gcry_error_t error = GPG_ERR_NO_ERROR;
     int32_t err = 0;
+    uint32_t count = 0;
+    //key_pair_t account_keys = {0};
+    query_return_t query_insert = {0};
     
     err = create_wallet_db("wallet");
     if (err) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
     }
+    /*
+    error = char_to_uint8("a2c20798f8631fcaca9b4c364111b2651fa7966ced524f474e9eeed9a82b6c74", account_keys.key_priv, 64);
+    if (error) {
+	fprintf(stderr, "Problem converting string into char*\n");
+	err = -1;
+	exit(err);
+	}*/
+
+    strcpy(query_insert.value, "a2c20798f8631fcaca9b4c364111b2651fa7966ced524f474e9eeed9a82b6c74");
+    //memcpy(query_insert.value, account_keys.key_priv, 32);
+    query_insert.id = 0;
     
-    err = query_count("wallet", "account", "public_key", "");
+    err = insert_key(&query_insert, 1, "wallet", "account", "private_key");
+    if (err < 0) {
+	fprintf(stderr, "Problem inserting into  database, exiting\n");
+	exit(err);
+    }
+    
+    err = query_count("wallet", "account", "private_key", "");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);
     }
-    uint32_t count = err;
+    count = err;
     printf("Number of rows returned: %u\n", count);
     
     query_return_t query_return[err];
     
-    err = read_key(query_return, "wallet", "account", "public_key", "");
+    err = read_key(query_return, "wallet", "account", "private_key", "");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);

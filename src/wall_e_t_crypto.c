@@ -22,7 +22,7 @@
 #include <wall_e_t.h>
 
 gcry_error_t libgcrypt_initializer(void) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
 
     // Check libgcrypt version	
     const char *version = gcry_check_version(NEED_LIBGCRYPT_VERSION);
@@ -61,7 +61,7 @@ gcry_error_t libgcrypt_initializer(void) {
 }
 
 gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_length) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     char *string_swap = NULL;
 
     if (s_string == NULL || string_length < 1) {
@@ -93,7 +93,7 @@ gcry_error_t char_to_uint8(char *s_string, uint8_t *s_number, size_t string_leng
 }
 
 gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_length) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     char *string_swap = NULL;
     
     if (s_number == NULL || uint8_length < 1) {
@@ -125,7 +125,7 @@ gcry_error_t uint8_to_char(uint8_t *s_number, char *s_string, size_t uint8_lengt
 }
 
 gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *s_buff = NULL;
 
     if (hex == NULL || hex_length < 1) {
@@ -154,7 +154,7 @@ gcry_error_t hash_to_hash160(uint8_t *hash160, uint8_t *hex, size_t hex_length) 
 }			   
 
 gcry_error_t reverse_bytes(uint8_t *output, uint8_t *input, size_t length) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
 
     if (input == NULL || output == NULL) {
 	fprintf (stderr, "input and output can't be NULL\n");
@@ -175,7 +175,7 @@ gcry_error_t reverse_bytes(uint8_t *output, uint8_t *input, size_t length) {
 }
 
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_mpi_t mpi_base58 = NULL;
     gcry_mpi_t mpi_key = NULL;
     gcry_mpi_t mpi_result = NULL;
@@ -283,7 +283,7 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 
 gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_key) {
 #define BUFF_SIZE 400
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     char *s_key_buff = NULL;
     char *s_key_swap = NULL;
     gcry_ctx_t s_key_ctx = NULL;
@@ -360,7 +360,7 @@ gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_k
 
 gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     typedef char *word_t[nwords];
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     char *wordlist[] = {WORDLIST};
     uint32_t nbytes = 0;
     uint8_t *r_seed = NULL;
@@ -512,7 +512,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 }
 
 gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     typedef char word_t[24][50];
     char *wordlist[] = {WORDLIST};
     word_t *words = NULL;
@@ -638,7 +638,7 @@ gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem)
 }
 
 gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t *parent_chain_code, uint32_t key_index, hardened_t hardened) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_buffer_t *key_buff = NULL;
     uint8_t *swap_priv_key = NULL;
     uint32_t *index = NULL;
@@ -843,7 +843,7 @@ gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t
 }
 
 gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uint8_t *par_pub, uint8_t depth, uint32_t key_index, BIP_t wallet_type)  {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *intermediate_key = NULL;
     uint8_t *hash160 = NULL;
     uint8_t *checksum = NULL;
@@ -966,7 +966,7 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 }
 
 gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *key, size_t uint8_length, encoding bech_type) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *intermediate_key = NULL;
     uint8_t *intermediate_hash = NULL;
     uint64_t *s_swap = NULL;
@@ -1058,7 +1058,7 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
 }
 
 gcry_error_t WIF_encode(char *WIF, size_t char_length, uint8_t *priv_key, net_t bitcoin_net) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *s_buff = NULL;
     uint8_t *checksum = NULL;
     
@@ -1116,7 +1116,7 @@ gcry_error_t WIF_encode(char *WIF, size_t char_length, uint8_t *priv_key, net_t 
 }
 
 gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password) {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
     gcry_cipher_hd_t hd;
     uint8_t *s_key = NULL;
@@ -1220,7 +1220,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 }			  
 
 gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password)  {
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
     gcry_cipher_hd_t hd;
     uint8_t *s_key = NULL;
@@ -1314,7 +1314,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 
 gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length, uint8_t *priv_key) {
 #define BUFF_SIZE 400
-    static gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_error_t err = GPG_ERR_NO_ERROR;
     char *s_key_buff = NULL;
     char *s_data_buff = NULL;
     char *s_key_swap = NULL;
