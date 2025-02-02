@@ -288,9 +288,11 @@ int32_t read_key(query_return_t *query_return, char *db_name, char *table, char 
     }
 
     // Here we have to work
+    uint32_t count = 0;
     while (err == SQLITE_ROW) {
-	query_return->id = sqlite3_column_int(pstmt, 0);
-	strcpy(query_return->value, (char *)sqlite3_column_text(pstmt, 1));
+	query_return[count].id = sqlite3_column_int(pstmt, 0);
+	strcpy(query_return[count].value, (char *)sqlite3_column_text(pstmt, 1));
+	count++;
 	err = sqlite3_step(pstmt);
 	if (err == SQLITE_ERROR) {
 	    fprintf(stderr, "Not possible to execute query: %s with error: %d\n", query, err);
