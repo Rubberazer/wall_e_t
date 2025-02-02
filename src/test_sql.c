@@ -22,20 +22,29 @@
 #include <wall_e_t.h>
 
 int main(int arg, char *arv[]) {
-    int32_t err = 0;   
+    int32_t err = 0;
+    query_return_t query_return = {0};
     
     err = create_wallet_db("wallet");
     if (err) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
     }
     
-    err = query_count("wallet", "account", "public_key", NULL);
+    err = query_count("wallet", "account", "public_key", "WHERE id=1");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);
     }
     printf("Number of rows returned: %d\n", err);
 
+    err = read_key(&query_return, "wallet", "account", "public_key", "WHERE id=1");
+    if (err < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	exit(err);
+    }
+
+    printf("Values returned, index:%d value:%s\n", query_return.id, query_return.value);
+    
     /*
     return_query = read_key("wallet", "account", "public_key_address", all, decrypted);
 	if (return_query.index < 0) {

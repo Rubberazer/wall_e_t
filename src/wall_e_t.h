@@ -176,8 +176,8 @@ typedef struct {
 } ECDSA_sign_t;
 
 typedef struct {
-    uint32_t index;
-    uint8_t value[113];
+    uint32_t id;
+    char value[200];
 } query_return_t;
 
 typedef enum {
@@ -211,18 +211,6 @@ typedef enum {
     password,
     passphrase
 } password_t;
-
-typedef enum {
-    all,
-    last,
-    first,
-    id
-} num_values_t;
-
-typedef enum {
-    decrypted,
-    encrypted
-} encryption_t;  
 
 /* Initializing libgcrypt */
 gcry_error_t libgcrypt_initializer(void);
@@ -291,6 +279,6 @@ int32_t create_wallet_db(char *db_name);
 int32_t query_count(char *db_name, char *table, char *key, char * condition);
 
 /* Read values from database*/
-query_return_t read_key(char *db_name, char *table, char *key, num_values_t num_values, encryption_t decript);
+int32_t read_key(query_return_t *query_return, char *db_name, char *table, char *key, char *condition);
 
 #endif  // wall_e_t_h__
