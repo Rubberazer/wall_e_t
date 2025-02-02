@@ -350,8 +350,6 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
     strcat(query, ");");
     query_bytes = strlen(query);
     // End Query
-
-    printf("%s\n", query);
     
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
     if(err != SQLITE_OK) {
@@ -366,7 +364,7 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
 	    return -err;
 	}
-	err =sqlite3_bind_text(pstmt, 2, query_insert[i].value, -1, SQLITE_TRANSIENT);
+	err = sqlite3_bind_text(pstmt, 2, query_insert[i].value, -1, SQLITE_TRANSIENT);
 	if (err != SQLITE_OK) {
 	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
 	    return -err;
@@ -375,7 +373,7 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 	err = sqlite3_step(pstmt);	
 	if (err == SQLITE_ERROR) {
 	    fprintf(stderr, "Not possible to execute query: %s with error number %d\n", query, err);
-	    return -err
+	    return -err;
 	}
 	sqlite3_clear_bindings(pstmt);
 	sqlite3_reset(pstmt);
