@@ -69,7 +69,7 @@ int main(int arg, char *arv[]) {
     }
 
     memset(keys[1].key_priv, 0, 32);
-    // PKCS#7+IV length (16 bytes)
+    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
     uint32_t s_in_length = 0;
     if (!((sizeof(key_pair_t))%16)) {
 	s_in_length = sizeof(key_pair_t)+16;
