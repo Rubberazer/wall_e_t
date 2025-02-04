@@ -177,7 +177,7 @@ typedef struct {
 
 typedef struct {
     uint32_t id;
-    char value[200];
+    char value[300];
 } query_return_t;
 
 typedef enum {

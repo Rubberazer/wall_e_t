@@ -80,7 +80,8 @@ int32_t create_wallet_db(char *db_name) {
     // Create account table
     strcpy(query, "CREATE TABLE account ("
 	   "id INTEGER PRIMARY KEY,"
-	   "private_key TEXT"
+	   "private_key TEXT,"
+	   "chain_code TEXT"
 	   ");");
     
     query_bytes = strlen(query);
@@ -341,7 +342,7 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 	return -err;
     }        
 
-    // Begin SELECT query
+    // Begin INSERT query
     strcpy(query, "INSERT INTO ");
     strcat(query, table);
     strcat(query, " (id, ");
@@ -371,7 +372,7 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 	}
 	
 	err = sqlite3_step(pstmt);	
-	if (err == SQLITE_ERROR) {
+	if (err != SQLITE_DONE) {
 	    fprintf(stderr, "Not possible to execute query: %s with error number %d\n", query, err);
 	    return -err;
 	}
