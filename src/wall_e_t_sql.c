@@ -80,8 +80,7 @@ int32_t create_wallet_db(char *db_name) {
     // Create account table
     strcpy(query, "CREATE TABLE account ("
 	   "id INTEGER PRIMARY KEY,"
-	   "private_key TEXT,"
-	   "chain_code TEXT"
+	   "keys BLOB"
 	   ");");
     
     query_bytes = strlen(query);
@@ -109,6 +108,7 @@ int32_t create_wallet_db(char *db_name) {
 	fprintf(stderr, "Failed to reset query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
 	return err;
     }
+    query_bytes = strlen(query);
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
     if(err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
@@ -132,6 +132,7 @@ int32_t create_wallet_db(char *db_name) {
 	fprintf(stderr, "Failed to reset query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
 	return err;
     }
+    query_bytes = strlen(query);
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);
     if(err != SQLITE_OK) {
 	fprintf(stderr, "Not possible to process query: %s with error: %s\n", query, sqlite3_errmsg(pdb));
@@ -288,7 +289,7 @@ int32_t read_key(query_return_t *query_return, char *db_name, char *table, char 
 
     while (err == SQLITE_ROW) {
 	query_return[count].id = sqlite3_column_int(pstmt, 0);
-	strcpy(query_return[count].value, (char *)sqlite3_column_text(pstmt, 1));
+	memcpy(query_return[count].value, sqlite3_column_blob(pstmt, 1), sqlite3_column_bytes(pstmt, 1));
 	count++;
 	err = sqlite3_step(pstmt);
 	if (err == SQLITE_ERROR) {
@@ -365,7 +366,7 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
 	    return -err;
 	}
-	err = sqlite3_bind_text(pstmt, 2, query_insert[i].value, -1, SQLITE_TRANSIENT);
+	err = sqlite3_bind_blob(pstmt, 2, query_insert[i].value, -1, SQLITE_TRANSIENT);
 	if (err != SQLITE_OK) {
 	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
 	    return -err;

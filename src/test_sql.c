@@ -41,18 +41,18 @@ int main(int arg, char *arv[]) {
     }
     
     query_insert.id = 0;
-    err = encrypt_AES256((uint8_t *)query_insert.value, keys[0].key_priv, 32, "abc&we45./");
+    err = encrypt_AES256(query_insert.value, (uint8_t *)(&keys[0]), sizeof(key_pair_t), "abc&we45./");
     if (err) {
 	printf("Problem encrypting message, error code:%d", err);
     }
     
-    err = insert_key(&query_insert, 1, "wallet", "account", "private_key");
+    err = insert_key(&query_insert, 1, "wallet", "account", "keys");
     if (err < 0) {
 	fprintf(stderr, "Problem inserting into  database, exiting\n");
 	exit(err);
     }
     
-    err = query_count("wallet", "account", "private_key", "");
+    err = query_count("wallet", "account", "keys", "");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);
@@ -62,19 +62,30 @@ int main(int arg, char *arv[]) {
     
     query_return_t query_return[err];
     
-    err = read_key(query_return, "wallet", "account", "private_key", "");
+    err = read_key(query_return, "wallet", "account", "keys", "");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);
     }
-    
-    err = decrypt_AES256(keys[1].key_priv, (uint8_t *)query_return[0].value, strlen(query_return[0].value), "abc&we45./");
+
+    memset(keys[1].key_priv, 0, 32);
+    // PKCS#7+IV length (16 bytes)
+    uint32_t s_in_length = 0;
+    if (!((sizeof(key_pair_t))%16)) {
+	s_in_length = sizeof(key_pair_t)+16;
+    }
+    else {
+	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
+    }
+    s_in_length += 16;
+
+    err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, "abc&we45./");
     if (err) {
 	printf("Problem decrypting message, error code:%d", err);
     }
 
     for (uint32_t i =0; i < count; i++ ) {
-	printf("Values returned, index:%d value: %s and string length: %lu\n", query_return[i].id, query_return[i].value, strlen(query_return[i].value));
+	printf("Values returned, index:%d value: %s\n", query_return[i].id, query_return[i].value);
     }
 
     printf("\nDecrypted key: \n");
