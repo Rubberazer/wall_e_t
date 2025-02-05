@@ -26,7 +26,10 @@ int main(int arg, char *arv[]) {
     int32_t err = 0;
     uint32_t count = 0;
     query_return_t query_insert = {0};
+    query_return_t insert_address = {0};
+    query_return_t recover_address = {0};
     key_pair_t keys[2] = {0};
+    char *password = "abc&we45dsad./";
     
     err = create_wallet_db("wallet");
     if (err) {
@@ -41,7 +44,7 @@ int main(int arg, char *arv[]) {
     }
     
     query_insert.id = 0;
-    err = encrypt_AES256(query_insert.value, (uint8_t *)(&keys[0]), sizeof(key_pair_t), "abc&we45./");
+    err = encrypt_AES256(query_insert.value, (uint8_t *)(&keys[0]), sizeof(key_pair_t), password);
     if (err) {
 	printf("Problem encrypting message, error code:%d", err);
     }
@@ -79,20 +82,36 @@ int main(int arg, char *arv[]) {
     }
     s_in_length += 16;
 
-    err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, "abc&we45./");
+    err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, password);
     if (err) {
 	printf("Problem decrypting message, error code:%d", err);
     }
-
-    for (uint32_t i =0; i < count; i++ ) {
-	printf("Values returned, index:%d value: %s\n", query_return[i].id, query_return[i].value);
-    }
-
     printf("\nDecrypted key: \n");
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x", keys[1].key_priv[i]);
     }
     printf("\n");
-	   
+
+    char *bitcoin_address = "bc1q0cgzunwtnydaklsrrv8gc6frdm9tq2fdprydl6";
+    insert_address.id = 0;
+    memcpy(insert_address.value, bitcoin_address, strlen(bitcoin_address));
+    
+    err = insert_key(&insert_address, 1, "wallet", "receive", "address");
+    if (err < 0) {
+	fprintf(stderr, "Problem inserting address into database, exiting\n");
+	exit(err);
+    }
+    
+    err = read_key(&recover_address, "wallet", "receive", "address", "WHERE id=0");
+    if (err < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	exit(err);
+    }
+    
+    char bitcoin_adress_rec[100] = {0};
+    memcpy(bitcoin_adress_rec, recover_address.value, strlen(bitcoin_address));
+    
+    printf("Bitcoin address: %s\n", bitcoin_adress_rec);
+    
     exit(EXIT_SUCCESS);	
 }
