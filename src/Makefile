@@ -15,7 +15,7 @@ LIBS=-lgcrypt -lsqlite3
 LIBS_FOLDER = -L /usr/local/lib
 INCLUDE=-I ./ -I /usr/include
 
-all:
+wallet:
 	$(CC) $(CFLAGS) -o $(TGT_FOLDER)$(TARGET) $(FILES) $(LIBS) $(INCLUDE)
 
 tests: test_crypt test_BIP84 test_sql test_user

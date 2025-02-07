@@ -1,5 +1,5 @@
-all:
-	$(MAKE) -C src all
+wallet:
+	$(MAKE) -C src wallet
 
 tests:
 	$(MAKE) -C src tests

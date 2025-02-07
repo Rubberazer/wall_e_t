@@ -15,10 +15,43 @@
  * limitations under the License.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <getopt.h>
 #include <wall_e_t.h>
 
-int main(int arg, char *arv[]) {
-    static gcry_error_t err = 0;
+static struct option options[] = {
+    {"create",  0, NULL, 'c'},
+    {"recover", 0, NULL, 'r'},
+    {"help",    0, NULL, 'h'},
+    {"show",    2, NULL, 's'},
+    {NULL, 0, NULL, 0}
+};
 
+int main(int argc, char **argv) {
+    gcry_error_t err = 0;
+    //int32_t error = 0;
+    int32_t opts = 0;
+    int32_t option_index = 0;
+
+    while ( opts != -1) {
+	opts = getopt_long_only(argc, argv, "crhs:", options, &option_index);
+	switch (opts) {
+	case '1':
+	case 'c': fprintf(stdout, "Create wallet\n");
+	    break;
+	case 's': fprintf(stdout, "show with flag: %s\n", optarg);
+	    break;
+	case 'r': fprintf(stdout, "Recover wallet\n");
+	    break;
+	case 'h': print_usage();
+	    break;
+	case '?': print_usage();
+	    break;
+	default: print_usage();
+	}
+    }
+    
     exit(err);	
 }

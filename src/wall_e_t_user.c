@@ -22,6 +22,16 @@
 #include <stdio_ext.h>
 #include <wall_e_t.h>
 
+void print_usage(void) {
+    fprintf(stdout, "wallet usage:\n"
+	    "    -create                  Creates a new Bitcoin wallet\n"
+	    "    -show key                Shows wallet Account Private key on screen\n"
+	    "    -show addresses          Shows all bitcoin addresses in wallet on screen\n"
+	    "    -show keys addresses     Shows all bitcoin addresses and their corresponding private keys for each address in wallet on screen\n"
+	    "    -recover                 Recovers a wallet by using the list of mnemonic words and passphrase\n"
+	    "    -help                    Shows this\n");
+}
+
 int32_t yes_no_menu(void) {
     int32_t err = 0;
     char answer[5] = "";

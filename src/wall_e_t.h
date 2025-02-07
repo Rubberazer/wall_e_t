@@ -281,7 +281,10 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition);
 /* Read values from database */
 int32_t read_key(query_return_t *query_return, char *db_name, char *table, char *key, char *condition);
 
-/* Insert values & index in the database*/
+/* Insert values & index in the database */
 int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_name, char *table, char *key);
-    
+
+/* Print wallet usage */
+void print_usage(void);
+
 #endif  // wall_e_t_h__

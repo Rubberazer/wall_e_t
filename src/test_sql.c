@@ -42,6 +42,7 @@ int main(int arg, char *arv[]) {
 	err = -1;
 	return err;
     }
+    memset(keys[0].key_priv_chain, 0x11, 64);
     
     query_insert.id = 0;
     err = encrypt_AES256(query_insert.value, (uint8_t *)(&keys[0]), sizeof(key_pair_t), password);
@@ -82,10 +83,20 @@ int main(int arg, char *arv[]) {
     }
     s_in_length += 16;
 
-    err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, password);
+    err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, "abc&we45dsad./");
     if (err) {
 	printf("Problem decrypting message, error code:%d", err);
     }
+
+    uint8_t verifier[64] = {0};
+    memset(verifier, 0x11, 64);
+    
+    if (memcmp(keys[1].key_priv_chain, verifier, 64)) {
+	fprintf(stdout, "Incorrect password\n");
+	err = -1;
+	return err;
+    }
+
     printf("\nDecrypted key: \n");
     for (uint32_t i = 0; i < 32; i++) {
 	printf("%02x", keys[1].key_priv[i]);
@@ -111,7 +122,7 @@ int main(int arg, char *arv[]) {
     char bitcoin_adress_rec[100] = {0};
     memcpy(bitcoin_adress_rec, recover_address.value, strlen(bitcoin_address));
     
-    printf("Bitcoin address: %s\n", bitcoin_adress_rec);
+    printf("Bitcoin address: %s on index: %u\n", bitcoin_adress_rec, recover_address.id);
     
     exit(EXIT_SUCCESS);	
 }
