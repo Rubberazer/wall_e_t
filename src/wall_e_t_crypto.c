@@ -26,7 +26,7 @@ gcry_error_t libgcrypt_initializer(void) {
 
     // Check libgcrypt version	
     const char *version = gcry_check_version(NEED_LIBGCRYPT_VERSION);
-    fprintf(stdout, "libgcrypt version: %s\n", version);
+    //fprintf(stdout, "libgcrypt version: %s\n", version);
     if (!version) {
 	fprintf(stderr, "Libgcrypt is too old (need %s, have %s)\n",
 		NEED_LIBGCRYPT_VERSION, gcry_check_version(NULL));
@@ -359,7 +359,7 @@ gcry_error_t pub_from_priv(uint8_t *pub_key, uint8_t *pub_key_c, uint8_t *priv_k
 }
 
 gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
-    typedef char *word_t[nwords];
+    typedef char *word_t[20];
     gcry_error_t err = GPG_ERR_NO_ERROR;
     char *wordlist[] = {WORDLIST};
     uint32_t nbytes = 0;
@@ -371,7 +371,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     char *s_salt = NULL;
     gcry_buffer_t *key_buff = NULL; 	
     
-    if (salt == NULL || strlen(salt) > 20) {
+    if (salt == NULL || strlen(salt) > PASSP_MAX) {
 	fprintf (stderr, "Salt is limited to 20 characters in english, no emoticons\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;
@@ -419,7 +419,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr4;
     }
-    words = (word_t *)gcry_calloc_secure(1, sizeof(word_t)+20*nwords*sizeof(char));
+    words = (word_t *)gcry_calloc_secure(nwords, sizeof(word_t));
     if (words == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr5;
@@ -530,7 +530,7 @@ gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem)
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
-    if (salt == NULL || strlen(salt) > 20) {
+    if (salt == NULL || strlen(salt) > PASSP_MAX) {
 	fprintf (stderr, "salt is limited to 20 characters in english, no emoticons\n");
 	err = gcry_error_from_errno(EINVAL);
 	return err;

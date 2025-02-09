@@ -22,7 +22,7 @@
 #include <wall_e_t.h>
 
 int main(void) {
-    static gcry_error_t err = 0;    
+    gcry_error_t err = 0;    
 
     /********************
     *  m'/84'/0'/0'/0   *

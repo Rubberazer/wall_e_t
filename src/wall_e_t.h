@@ -45,6 +45,9 @@
 #define ZPUB "04b24746"
 #define BASE58 "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 #define BECH32 "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+#define PASSWD_MAX 64
+#define PASSWD_MIN 10
+#define PASSP_MAX 20
 #define WORDLIST "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", \
 	"across", "act", "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit", "adult", "advance", "advice", "aerobic", "affair", "afford", "afraid", "again", \
 	"age", "agent", "agree", "ahead", "aim", "air", "airport", "aisle", "alarm", "album", "alcohol", "alert", "alien", "all", "alley", "allow", "almost", "alone", "alpha", "already", "also", "alter",\
@@ -286,5 +289,8 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 
 /* Print wallet usage */
 void print_usage(void);
+
+/* Menu option to create a new wallet */
+int32_t create_wallet(void);
 
 #endif  // wall_e_t_h__

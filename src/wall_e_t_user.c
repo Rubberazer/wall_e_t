@@ -25,10 +25,11 @@
 void print_usage(void) {
     fprintf(stdout, "wallet usage:\n"
 	    "    -create                  Creates a new Bitcoin wallet\n"
-	    "    -show key                Shows wallet Account Private key on screen\n"
-	    "    -show addresses          Shows all bitcoin addresses in wallet on screen\n"
-	    "    -show keys addresses     Shows all bitcoin addresses and their corresponding private keys for each address in wallet on screen\n"
+	    "    -show key                Shows wallet Account Private key in WIF format\n"
+	    "    -show addresses          Shows all bitcoin addresses in wallet\n"
+	    "    -show keys addresses     Shows all bitcoin addresses and their corresponding private keys for each address in wallet\n"
 	    "    -recover                 Recovers a wallet by using the list of mnemonic words and passphrase\n"
+	    "    -receive                 Receive bitcoin, a new bitcoin address will be created\n"
 	    "    -help                    Shows this\n");
 }
 
@@ -65,12 +66,12 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
     switch (pass_type){
     case password:
 	strcpy(pass, "password");
-	pass_max = 64;
-	pass_min = 10;
+	pass_max = PASSWD_MAX;
+	pass_min = PASSWD_MIN;
 	break;
     case passphrase:
 	strcpy(pass, "passphrase");
-	pass_max = 20;
+	pass_max = PASSP_MAX;
 	pass_min = 0;
 	break;
     default:
@@ -88,22 +89,22 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
 	err = -1;
 	return err;
     }
-		
-    while (passwd == NULL || strlen(passwd) < pass_min || strlen(passwd) > pass_max) {
+    uint8_t pass_marker = 0;
+    while (strlen(passwd) < pass_min || strlen(passwd) > pass_max || ((pass_type == passphrase) && (pass_marker == 0))) {
 	uint32_t pos = 0;
-	fprintf(stdout, "Enter %s, this %s will encrypt your wallet's Private keys, it should be a maximum of %u and a minimum of %u characters long:\n", pass, pass, pass_max, pass_min);
+	fprintf(stdout, "Enter %s, it should be a maximum of %u and a minimum of %u characters long:\n", pass, pass_max, pass_min);
 	fgets(passwd, pass_max+1, stdin);
 	pos = strcspn(passwd, "\n");
 	passwd[pos] = 0;
+	pass_marker = 1;
 	if (strlen(passwd) > pass_max) {
 	    fprintf(stdout, "P%s is too long, please try again\n", &pass[1]);
+	    pass_marker = 0;
 	}
 	else if (strlen(passwd) < pass_min) {
 	    fprintf(stdout, "P%s is too short, please try again\n", &pass[1]);
+	    pass_marker = 0;
 	}
-	else if (passwd == NULL) {
-	    fprintf(stdout, "Problem with %s, please try again\n", pass);
-	}			
 	__fpurge(stdin);
     }
 
@@ -113,7 +114,205 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
 	err = -1;
 	return err;
     }
-    fprintf(stdout, "P%s registered successfully\n", &pass[1]);
+    //fprintf(stdout, "P%s registered successfully\n", &pass[1]);
 
     return err;	
+}
+
+int32_t create_wallet(void) {
+    typedef char *word_t[70];
+    gcry_error_t err = GPG_ERR_NO_ERROR;
+    int32_t error = 0;
+    mnemonic_t *mnem = NULL;
+    key_pair_t *child_keys = NULL;
+    uint32_t nwords = 0;
+    word_t *s_salt = NULL;
+    word_t *passwd = NULL;
+    char nwords_answer[5] = "";
+    uint8_t nwords_menu = 1;
+    uint8_t pass_ctrl = 1;
+    query_return_t *query_insert = NULL;
+
+    err =libgcrypt_initializer();
+    if (!err) {
+	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
+	error = -1;
+	return error;
+    }
+    
+    fprintf(stdout, "A standard BIP84 Bitcoin wallet will be created, this wallet follows this keys derivation scheme.\n"
+	    "Maybe is a good idea if you disconnect your computer from the Internet now. It will be safer.\n"
+	    "\t\t\t*********************\n"
+	    "\t\t\t*  m'/84'/0'/0'/0   *\n"
+	    "\t\t\t*********************\n"
+	    "A standard mnemonic phrase in english will be generated according the BIP39 standard, this phrase will allow you to recover your wallet in case of wallet loss, e.g. wallet database file corruption or similar.\n"
+	    "This mnemonic phrase will be composed of either:\n"
+	    "    -12 words .\n"
+	    "    -15 words .\n"
+	    "    -18 words .\n"
+	    "    -21 words .\n"
+	    "    -24 words .\n"
+	    "Please indicate the number of words for your mnemonic phrase (answer with a number from the options above):\n");
+
+    while(nwords_menu) {
+	fgets(nwords_answer, 5, stdin);
+	nwords = atoi(nwords_answer);
+	switch (nwords) {
+	case 12: nwords_menu = 0; 
+	    break;
+	case 15: nwords_menu = 0;
+	    break;
+	case 18: nwords_menu = 0;
+	    break;
+	case 21: nwords_menu = 0;
+	    break;
+	case 24: nwords_menu = 0;
+	    break;
+	default:
+	    fprintf (stderr, "Number of words should be either: 12, 15, 18, 21 or 24\n");
+	}
+    }
+
+    mnem = (mnemonic_t *)gcry_calloc_secure(1, sizeof(mnemonic_t));
+    if (mnem == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    child_keys = (key_pair_t *)gcry_calloc_secure(3, sizeof(key_pair_t));
+    if (child_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }
+    s_salt = (word_t *)gcry_calloc_secure(2, sizeof(word_t));
+    if (s_salt == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr3;
+    }
+    passwd = (word_t *)gcry_calloc_secure(2, sizeof(word_t));
+    if (passwd == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr4;
+    }
+    query_insert = (query_return_t *)gcry_calloc_secure(1, sizeof(query_return_t));
+    if (query_insert == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr5;
+    }
+
+    fprintf(stdout, "Along with your mnemonic phrase, an extra word or passphrase can be added for further security, YOU WILL HAVE TO KEEP THIS PASSPHRASE ALONG WITH YOUR MNEMONIC PHRASE IN A SAFE PLACE AS IT WILL BE REQUIRED TO RECOVER YOUR WALLET\n");    
+    while(pass_ctrl) {
+	error = getpasswd((char *)(&s_salt[0]), passphrase);
+	if (error) {
+	    fprintf(stderr, "Problem getting passphrase from user\n");
+	}
+	fprintf(stdout, "Confirm your passphrase please\n");
+	error = getpasswd((char *)(&s_salt[1]), passphrase);
+	if (error) {
+	    fprintf(stderr, "Problem getting passphrase from user\n");
+	}
+
+	//printf("s_salt[0] & s_salt[1]:%s & %s\n", (char *)(&s_salt[0]), (char *)(&s_salt[1]) );
+	
+	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
+	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
+	    memset(s_salt, 0, 2*sizeof(word_t));
+	}
+	else {pass_ctrl = 0;}
+    }
+    pass_ctrl = 1;
+
+    fprintf(stdout, "You will also need to create a password to encrypt(AES256 CBC) you Private Account Keys into your wallet\n");
+    while(pass_ctrl) {
+	error = getpasswd((char *)(&passwd[0]), password);
+	if (error) {
+	    fprintf(stderr, "Problem getting password from user\n");
+	}
+	fprintf(stdout, "Confirm your password please\n");
+	error = getpasswd((char *)(&passwd[1]), password);
+	if (error) {
+	    fprintf(stderr, "Problem getting passphrase from user\n");
+	}
+
+	//printf("passwd[0] & passwd[1]:%s & %s\n", (char *)(&passwd[0]), (char *)(&passwd[1]) );
+	
+	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
+	    fprintf(stdout, "Password doesn't match, please type it again\n");
+	    memset(passwd, 0, 2*sizeof(word_t));
+	}
+	else {pass_ctrl = 0;}
+    }
+	
+    // Obtain mnemonic + root keys
+    err = create_mnemonic((char *)(&s_salt[1]), nwords, mnem);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem creating mnemonic, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }
+    // Deriving keys
+    // Purpose: BIP84
+    err = key_deriv(&child_keys[0], mnem->keys.key_priv, mnem->keys.chain_code, BIP84, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving purpose keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }	
+    // Coin: Bitcoin
+    err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving coin keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }	
+    // Account keys
+    err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }	
+
+    memset(child_keys[2].key_priv_chain, 0x11, 64);
+    query_insert->id = 0;
+    err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
+    if (err) {
+	fprintf(stderr, "Problem encrypting keys\n");
+	error = -1;
+	goto allocerr6;
+    }
+
+    error = create_wallet_db("wallet");
+    if (error) {
+	fprintf(stderr, "Problem creating database file, exiting\n");
+	goto allocerr6;
+    }
+    error = insert_key(query_insert, 1, "wallet", "account", "keys");
+    if (error < 0) {
+	fprintf(stderr, "Problem inserting into  database, exiting\n");
+	goto allocerr6;
+    }
+
+    fprintf(stdout, "Wallet create sucessfully. Remember that by now you should also have an extra passphrase word plus the password to decrypt your Account private keys, if you forgot is better to repeat the process again before transfering any coins into your wallet\n"
+	    "Your mnemonic phrase is:\n"
+	    "%s\n", mnem->mnemonic);
+
+ allocerr6:
+    gcry_free(query_insert);
+ allocerr5:
+    gcry_free(password); 
+ allocerr4:
+    gcry_free(s_salt);
+ allocerr3:
+    gcry_free(child_keys);
+ allocerr2:
+    gcry_free(mnem);
+ allocerr1:
+    gcry_control(GCRYCTL_TERM_SECMEM);
+
+    return error;    
 }

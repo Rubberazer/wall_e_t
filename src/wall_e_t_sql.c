@@ -196,7 +196,7 @@ int32_t query_count(char *db_name, char *table, char *key, char * condition) {
 
     err = sqlite3_open_v2(path, &pdb, SQLITE_OPEN_READONLY, NULL);
     if (err != SQLITE_OK) {
-	fprintf(stderr, "Not possible to open database file: %s", db_name);
+	fprintf(stderr, "Not possible to open database file: %s\n", db_name);
 	return -err;
     }
     err = sqlite3_prepare_v2(pdb, query, query_bytes, &pstmt, query_tail);

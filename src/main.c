@@ -22,36 +22,50 @@
 #include <ctype.h>
 #include <wall_e_t.h>
 
-static struct option options[] = {
+int main(int argc, char **argv) {
+    int32_t err = 0;
+    int32_t opts = 0;
+    uint32_t opt_mask = 0;
+    struct option options[] = {
     {"create",  0, NULL, 'c'},
     {"recover", 0, NULL, 'r'},
-    {"help",    0, NULL, 'h'},
+    {"receive", 0, NULL, 'R'},
     {"show",    1, NULL, 's'},
+    {"help",    0, NULL, 'h'},
     {NULL, 0, NULL, 0}
-};
-
-int main(int argc, char **argv) {
-    gcry_error_t err = 0;
-    //int32_t error = 0;
-    int32_t opts = 0;
-    int32_t option_index = 0;
+    };
 
     while ( opts != -1) {
-	if (argc < 2)
+	if ((argc < 2) || (argc > 4)) {
 	    print_usage();
-	opts = getopt_long_only(argc, argv, "crhs:", options, &option_index);
+	    exit(err);
+	}
+	opts = getopt_long_only(argc, argv, "crhs:", options, NULL);
 	switch (opts) {
-	case '1':
-	case 'c': fprintf(stdout, "Create wallet\n");
+	case 'c':
+	    opt_mask = 0x01;
+	    fprintf(stdout, "Create wallet\n");
+	    err = create_wallet();
 	    break;
-	case 's': fprintf(stdout, "show\n");
+	case 'r':
+	    opt_mask = 0x02;
+	    fprintf(stdout, "Recover wallet\n");
 	    break;
-	case 'r': fprintf(stdout, "Recover wallet\n");
+	case 'R':
+	    opt_mask = 0x04;
+	    fprintf(stdout, "Receive bitcoin\n");
+	    break;
+	case 's':
+	    fprintf(stdout, "show\n");
+	    for (uint32_t i = optind-1; i < argc; i++)
+		printf ("Arguments %s\n", argv[i]);
 	    break;
 	case 'h': print_usage();
 	    break;
 	}
+	break;
     }
-    
+
+    printf("%u", opt_mask);
     exit(err);	
 }
