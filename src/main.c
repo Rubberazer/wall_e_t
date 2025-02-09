@@ -72,8 +72,14 @@ int main(int argc, char **argv) {
 	}
 	else {fprintf(stdout, "Wallet created successfully\n");}
     }
-
-    
+     if (opt_mask == 0x02) {
+	err = recover_wallet();
+	if (err) {
+	    fprintf(stderr, "Problem recovering wallet, exiting\n");
+	    exit(err);
+	}
+	else {fprintf(stdout, "Wallet recovered successfully\n");}
+    }    
     
     exit(err);	
 }

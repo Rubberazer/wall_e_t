@@ -317,3 +317,189 @@ int32_t create_wallet(void) {
 
     return error;    
 }
+
+int32_t recover_wallet(void) {
+    typedef char *word_t[70];
+    gcry_error_t err = GPG_ERR_NO_ERROR;
+    int32_t error = 0;
+    mnemonic_t *mnem = NULL;
+    key_pair_t *child_keys = NULL;
+    word_t *s_salt = NULL;
+    word_t *passwd = NULL;
+    uint8_t pass_ctrl = 1;
+    query_return_t *query_insert = NULL;
+    char *recover_mnem = NULL;
+
+    err =libgcrypt_initializer();
+    if (!err) {
+	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
+	error = -1;
+	return error;
+    }
+    
+    fprintf(stdout, "This menu will help you to recover your wallet, you will need your mnemonic passphrase and passphrase word.\n"
+	    "Maybe is a good idea if you disconnect your computer from the Internet now. It will be safer.\n"
+	    "Your mnemonic phrase should be composed of either:\n"
+	    "    -12 words .\n"
+	    "    -15 words .\n"
+	    "    -18 words .\n"
+	    "    -21 words .\n"
+	    "    -24 words .\n"
+	    "You can copy&paste/type your mnemonic code now:\n");
+    
+    mnem = (mnemonic_t *)gcry_calloc_secure(1, sizeof(mnemonic_t));
+    if (mnem == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    child_keys = (key_pair_t *)gcry_calloc_secure(3, sizeof(key_pair_t));
+    if (child_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }
+    s_salt = (word_t *)gcry_calloc_secure(2, sizeof(word_t));
+    if (s_salt == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr3;
+    }
+    passwd = (word_t *)gcry_calloc_secure(2, sizeof(word_t));
+    if (passwd == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr4;
+    }
+    query_insert = (query_return_t *)gcry_calloc_secure(1, sizeof(query_return_t));
+    if (query_insert == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr5;
+    }
+    recover_mnem = (char *)gcry_calloc_secure(1000, sizeof(char));
+    if (recover_mnem == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr6;
+    }
+
+    fgets(recover_mnem, 1000, stdin);
+    uint32_t pos = strcspn(recover_mnem, "\n");
+    recover_mnem[pos] = 0;
+
+    fprintf(stdout, "Along with your mnemonic phrase, an additional passphrase si required, if you didnt have one, you can just leave it empty and press ENTER\n");    
+    while(pass_ctrl) {
+	error = getpasswd((char *)(&s_salt[0]), passphrase);
+	if (error) {
+	    fprintf(stderr, "Problem getting passphrase from user\n");
+	}
+	fprintf(stdout, "Confirm your passphrase please\n");
+	error = getpasswd((char *)(&s_salt[1]), passphrase);
+	if (error) {
+	    fprintf(stderr, "Problem getting passphrase from user\n");
+	}
+
+	printf("s_salt[0] & s_salt[1]:%s & %s\n", (char *)(&s_salt[0]), (char *)(&s_salt[1]) );
+	
+	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
+	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
+	    memset(s_salt, 0, 2*sizeof(word_t));
+	}
+	else {pass_ctrl = 0;}
+    }
+    fprintf(stdout, "Passphrase registered successfully\n\n");
+    pass_ctrl = 1;
+
+    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Account Keys into your wallet\n");
+    while(pass_ctrl) {
+	error = getpasswd((char *)(&passwd[0]), password);
+	if (error) {
+	    fprintf(stderr, "Problem getting password from user\n");
+	}
+	fprintf(stdout, "Confirm your password please\n");
+	error = getpasswd((char *)(&passwd[1]), password);
+	if (error) {
+	    fprintf(stderr, "Problem getting password from user\n");
+	}
+
+	printf("passwd[0] & passwd[1]:%s & %s\n", (char *)(&passwd[0]), (char *)(&passwd[1]) );
+	
+	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
+	    fprintf(stdout, "Password doesn't match, please type it again\n");
+	    memset(passwd, 0, 2*sizeof(word_t));
+	}
+	else {pass_ctrl = 0;}
+    }
+    fprintf(stdout, "Password registered successfully\n\n\n");
+
+    // Obtain mnemonic + root keys
+    err = recover_from_mnemonic(recover_mnem, (char *)(&s_salt[1]), mnem);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem recovering from mnemonic, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr7;
+    }
+    // Deriving keys
+    // Purpose: BIP84
+    err = key_deriv(&child_keys[0], mnem->keys.key_priv, mnem->keys.chain_code, BIP84, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving purpose keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr7;
+    }	
+    // Coin: Bitcoin
+    err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving coin keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr7;
+    }	
+    // Account keys
+    err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr7;
+    }	
+
+    memset(child_keys[2].key_priv_chain, 0x11, 64);
+    query_insert->id = 0;
+    err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
+    if (err) {
+	fprintf(stderr, "Problem encrypting keys\n");
+	error = -1;
+	goto allocerr7;
+    }
+
+    error = create_wallet_db("wallet");
+    if (error) {
+	fprintf(stderr, "Problem creating database file, exiting\n");
+	goto allocerr7;
+    }
+    error = insert_key(query_insert, 1, "wallet", "account", "keys");
+    if (error < 0) {
+	fprintf(stderr, "Problem inserting into  database, exiting\n");
+	goto allocerr7;
+    }
+
+    fprintf(stdout, "All done, now you should try to check your addresses and balances. You can reconnect to the Internet if you were disconnected before\n");
+
+ allocerr7:
+    gcry_free(recover_mnem);
+ allocerr6:
+    gcry_free(query_insert);
+ allocerr5:
+    gcry_free(password); 
+ allocerr4:
+    gcry_free(s_salt);
+ allocerr3:
+    gcry_free(child_keys);
+ allocerr2:
+    gcry_free(mnem);
+ allocerr1:
+    gcry_control(GCRYCTL_TERM_SECMEM);
+
+    return error;    
+}
+
