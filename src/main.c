@@ -44,8 +44,6 @@ int main(int argc, char **argv) {
 	switch (opts) {
 	case 'c':
 	    opt_mask = 0x01;
-	    fprintf(stdout, "Create wallet\n");
-	    err = create_wallet();
 	    break;
 	case 'r':
 	    opt_mask = 0x02;
@@ -66,6 +64,16 @@ int main(int argc, char **argv) {
 	break;
     }
 
-    printf("%u", opt_mask);
+    if (opt_mask == 0x01) {
+	err = create_wallet();
+	if (err) {
+	    fprintf(stderr, "Problem creating wallet, exiting\n");
+	    exit(err);
+	}
+	else {fprintf(stdout, "Wallet created successfully\n");}
+    }
+
+    
+    
     exit(err);	
 }

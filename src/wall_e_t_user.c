@@ -140,12 +140,12 @@ int32_t create_wallet(void) {
 	return error;
     }
     
-    fprintf(stdout, "A standard BIP84 Bitcoin wallet will be created, this wallet follows this keys derivation scheme.\n"
+    fprintf(stdout, "A standard BIP84 Bitcoin wallet will be created, the keys derivation scheme is as follows.\n"
 	    "Maybe is a good idea if you disconnect your computer from the Internet now. It will be safer.\n"
 	    "\t\t\t*********************\n"
 	    "\t\t\t*  m'/84'/0'/0'/0   *\n"
 	    "\t\t\t*********************\n"
-	    "A standard mnemonic phrase in english will be generated according the BIP39 standard, this phrase will allow you to recover your wallet in case of wallet loss, e.g. wallet database file corruption or similar.\n"
+	    "A standard mnemonic phrase in english will be generated according to the BIP39 standard, this phrase will allow you to recover your wallet in case of wallet loss, e.g. wallet database file corruption or similar.\n"
 	    "This mnemonic phrase will be composed of either:\n"
 	    "    -12 words .\n"
 	    "    -15 words .\n"
@@ -204,7 +204,7 @@ int32_t create_wallet(void) {
 	goto allocerr5;
     }
 
-    fprintf(stdout, "Along with your mnemonic phrase, an extra word or passphrase can be added for further security, YOU WILL HAVE TO KEEP THIS PASSPHRASE ALONG WITH YOUR MNEMONIC PHRASE IN A SAFE PLACE AS IT WILL BE REQUIRED TO RECOVER YOUR WALLET\n");    
+    fprintf(stdout, "Along with your mnemonic phrase, an extra word or passphrase can be added for further security, YOU WILL HAVE TO KEEP THIS PASSPHRASE ALONG WITH YOUR MNEMONIC PHRASE IN A SAFE PLACE, AS IT WILL BE REQUIRED TO RECOVER YOUR WALLET\n");    
     while(pass_ctrl) {
 	error = getpasswd((char *)(&s_salt[0]), passphrase);
 	if (error) {
@@ -216,7 +216,7 @@ int32_t create_wallet(void) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
 	}
 
-	//printf("s_salt[0] & s_salt[1]:%s & %s\n", (char *)(&s_salt[0]), (char *)(&s_salt[1]) );
+	printf("s_salt[0] & s_salt[1]:%s & %s\n", (char *)(&s_salt[0]), (char *)(&s_salt[1]) );
 	
 	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
 	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
@@ -224,9 +224,10 @@ int32_t create_wallet(void) {
 	}
 	else {pass_ctrl = 0;}
     }
+    fprintf(stdout, "Passphrase registered successfully\n\n");
     pass_ctrl = 1;
 
-    fprintf(stdout, "You will also need to create a password to encrypt(AES256 CBC) you Private Account Keys into your wallet\n");
+    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Account Keys into your wallet\n");
     while(pass_ctrl) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
@@ -238,7 +239,7 @@ int32_t create_wallet(void) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
 	}
 
-	//printf("passwd[0] & passwd[1]:%s & %s\n", (char *)(&passwd[0]), (char *)(&passwd[1]) );
+	printf("passwd[0] & passwd[1]:%s & %s\n", (char *)(&passwd[0]), (char *)(&passwd[1]) );
 	
 	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
 	    fprintf(stdout, "Password doesn't match, please type it again\n");
@@ -246,7 +247,7 @@ int32_t create_wallet(void) {
 	}
 	else {pass_ctrl = 0;}
     }
-	
+    fprintf(stdout, "Password registered successfully\n\n\n");
     // Obtain mnemonic + root keys
     err = create_mnemonic((char *)(&s_salt[1]), nwords, mnem);
     if (err) {
@@ -297,8 +298,8 @@ int32_t create_wallet(void) {
 	goto allocerr6;
     }
 
-    fprintf(stdout, "Wallet create sucessfully. Remember that by now you should also have an extra passphrase word plus the password to decrypt your Account private keys, if you forgot is better to repeat the process again before transfering any coins into your wallet\n"
-	    "Your mnemonic phrase is:\n"
+    fprintf(stdout, "Remember that by now, you should also have an extra passphrase word plus the password to decrypt your Account private keys, if you forgot them, it is better to repeat the process again before transfering any coins into your wallet\n"
+	    "Your mnemonic phrase is below, keep it safe and once you copy them, close this terminal screen, after that you can reconnect to the Internet if you were disconnected before:\n"
 	    "%s\n", mnem->mnemonic);
 
  allocerr6:
