@@ -180,6 +180,7 @@ typedef struct {
 
 typedef struct {
     uint32_t id;
+    uint32_t value_size;
     uint8_t value[1000];
 } query_return_t;
 

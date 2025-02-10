@@ -100,7 +100,7 @@ int32_t create_wallet_db(char *db_name) {
     memset(query, 0, strlen(query));
     strcpy(query, "CREATE TABLE receive ("
 	   "id INTEGER PRIMARY KEY,"
-	   "address TEXT"
+	   "address BLOB"
 	   ");");
 
     err = sqlite3_reset(pstmt);
@@ -124,7 +124,7 @@ int32_t create_wallet_db(char *db_name) {
     memset(query, 0, strlen(query));
     strcpy(query, "CREATE TABLE change ("
 	   "id INTEGER PRIMARY KEY,"
-	   "address TEXT"
+	   "address BLOB"
 	   ");");
 
     err = sqlite3_reset(pstmt);
@@ -366,7 +366,8 @@ int32_t insert_key(query_return_t *query_insert, uint32_t num_values, char *db_n
 	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
 	    return -err;
 	}
-	err = sqlite3_bind_blob(pstmt, 2, query_insert[i].value, -1, SQLITE_TRANSIENT);
+	// I GOT DO SOMETHING HERE
+	err = sqlite3_bind_blob(pstmt, 2, query_insert[i].value, query_insert[i].value_size, SQLITE_TRANSIENT);
 	if (err != SQLITE_OK) {
 	    fprintf(stderr, "Problem binding index with error: %s\n", sqlite3_errmsg(pdb));
 	    return -err;

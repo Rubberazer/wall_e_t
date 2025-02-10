@@ -45,6 +45,7 @@ int main(int arg, char *arv[]) {
     memset(keys[0].key_priv_chain, 0x11, 64);
     
     query_insert.id = 0;
+    query_insert.value_size = 1000;
     err = encrypt_AES256(query_insert.value, (uint8_t *)(&keys[0]), sizeof(key_pair_t), password);
     if (err) {
 	printf("Problem encrypting message, error code:%d", err);

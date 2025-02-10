@@ -276,6 +276,7 @@ int32_t create_wallet(void) {
 
     memset(child_keys[2].key_priv_chain, 0x11, 64);
     query_insert->id = 0;
+    query_insert->value_size = 1000;
     err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
     if (err) {
 	fprintf(stderr, "Problem encrypting keys\n");
@@ -474,6 +475,7 @@ int32_t recover_wallet(void) {
     
     memset(child_keys[2].key_priv_chain, 0x11, 64);
     query_insert->id = 0;
+    query_insert->value_size = 1000;
     err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
     if (err) {
 	fprintf(stderr, "Problem encrypting keys\n");
@@ -519,6 +521,7 @@ int32_t recover_wallet(void) {
 		    goto allocerr8;
 		}
 		address_insert[i].id = i;
+		address_insert[i].value_size = 42;
 		memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
 		memset(bech32_address, 0, 64);
 	    }
@@ -536,7 +539,7 @@ int32_t recover_wallet(void) {
     }
     
     fprintf(stdout, "All done, now you should try to check your addresses and balances. You can reconnect to the Internet if you were disconnected before\n");
-
+    
  allocerr8:
     gcry_free(address_keys);
  allocerr7:
