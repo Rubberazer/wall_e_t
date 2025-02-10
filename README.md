@@ -21,7 +21,7 @@ In order to compile, you will need to install libgcrypt and SQLite first e.g. on
 Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way. Also, Greg's site is an absolute must, highly recommended: https://learnmeabitcoin.com/.
 
 ## Is it safe?
-Very early development so at this point you shouldn't put any serious funds into the wallet itself, the way I look at this project is more educational e.g. example of how to develop a wallet in C and not using the ubiquitous OpenSSL. So far it is better to use the code to play yourself and maybe create your own wallets.
+Very early development so at this point you shouldn't put any serious funds into the wallet itself, the way I look at this project is more educational e.g. example of how to develop a wallet in C and not using the ubiquitous OpenSSL. So far it is better to use the code to play yourself and maybe create your own wallets and see how it is done.
 
 ## Tests
 You can just compile the tests:
@@ -42,7 +42,7 @@ This will create a wallet with a mnemonic phrase so you can recover it in the fu
 	./wall_e_t -create
 	
 ### Recover wallet
-This will recover your wallet starting from mnemonic phrase and passphrase 
+This will recover your wallet starting from a mnemonic phrase and an optional passphrase 
 
 	./wall_e_t -recover
 
