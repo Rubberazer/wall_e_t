@@ -692,7 +692,7 @@ int32_t show_key(void) {
 	}
 	fprintf(stdout, "For your eyes only. This below is the Root Private Key in hexadecimal and extended key address format:\n\n"
 		"\t\t\t\t\t\t\tRoot Private Key\n"
-		"\t\t\t\tHexadecimal format\t\t\t\tExtended Key Address Format\n");	
+		"\t\t\tHexadecimal format\t\t\t\t\t\t\t\tExtended Key Address Format\n");	
 	for (uint32_t i = 0; i < 32; i++) {
 	    fprintf(stdout, "%02x", root_keys->key_priv[i]);
 	}
