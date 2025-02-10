@@ -15,8 +15,7 @@ Also code snippets from the reference implementation of [BIP173](https://github.
 ## Dependencies
 In order to compile, you will need to install libgcrypt and SQLite first e.g. on a Debian based system this should be as simple as:
 
-    sudo apt install libgcrypt20-dev
-    sudo apt install libsqlite3-dev	
+    sudo apt install libgcrypt20-dev && sudo apt install libsqlite3-dev	
 
 ## Test vectors
 Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way. Also, Greg's site is an absolute must, highly recommended: https://learnmeabitcoin.com/.

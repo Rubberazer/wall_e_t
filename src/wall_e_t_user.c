@@ -541,7 +541,7 @@ int32_t recover_wallet(void) {
     }
     addresses_menu = 1;
     
-     fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you transfer coins, but not all of them into an address. Answer with a number between 0 to 500:\n");
+     fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you do a transfer. Answer with a number between 0 to 500:\n");
 
     while(addresses_menu) {
 	fgets(addr_answer, 5, stdin);
