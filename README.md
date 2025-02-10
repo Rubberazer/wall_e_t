@@ -62,7 +62,7 @@ This will show all your bitcoin addresses with their respective private keys on 
     ./wall_e_t -show keys
 
 ### Receive (not ready yet)
-This will create a new bitcoin address so you can receive coins and store this address in your wallet
+This will create a new bitcoin address so you can receive coins, and store this address in your wallet
 
     ./wall_e_t -receive
 	
