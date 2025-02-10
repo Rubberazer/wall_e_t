@@ -87,6 +87,13 @@ int main(int argc, char **argv) {
 	}
 	else {fprintf(stdout, "Wallet recovered successfully\n");}
     }    
-    
+     if (opt_mask == 0x08) {
+	 err = show_key();
+	if (err) {
+	    fprintf(stderr, "Problem showing Account key, exiting\n");
+	    exit(err);
+	}
+     }    
+   
     exit(err);	
 }

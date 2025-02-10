@@ -25,7 +25,7 @@
 void print_usage(void) {
     fprintf(stdout, "wallet usage:\n"
 	    "    -create                  Creates a new Bitcoin wallet\n"
-	    "    -show key                Shows wallet Account Private key in WIF format\n"
+	    "    -show key                Shows wallet Root Private key\n"
 	    "    -show addresses          Shows all bitcoin addresses in wallet\n"
 	    "    -show keys addresses     Shows all bitcoin addresses and their corresponding private keys for each address in wallet\n"
 	    "    -recover                 Recovers a wallet by using the list of mnemonic words and passphrase\n"
@@ -114,7 +114,6 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
 	err = -1;
 	return err;
     }
-    //fprintf(stdout, "P%s registered successfully\n", &pass[1]);
 
     return err;	
 }
@@ -226,7 +225,7 @@ int32_t create_wallet(void) {
     fprintf(stdout, "Passphrase registered successfully\n\n");
     pass_ctrl = 1;
 
-    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Account Keys into your wallet\n");
+    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Root Keys into your wallet\n");
     while(pass_ctrl) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
@@ -274,10 +273,10 @@ int32_t create_wallet(void) {
 	goto allocerr6;
     }	
 
-    memset(child_keys[2].key_priv_chain, 0x11, 64);
+    memset(mnem->keys.key_priv_chain, 0x11, 64);
     query_insert->id = 0;
     query_insert->value_size = 1000;
-    err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
+    err = encrypt_AES256(query_insert->value, (uint8_t *)(&mnem->keys), sizeof(key_pair_t), (char *)(&passwd[1]));
     if (err) {
 	fprintf(stderr, "Problem encrypting keys\n");
 	error = -1;
@@ -289,15 +288,15 @@ int32_t create_wallet(void) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
 	goto allocerr6;
     }
-    error = insert_key(query_insert, 1, "wallet", "account", "keys");
+    error = insert_key(query_insert, 1, "wallet", "root", "keys");
     if (error < 0) {
 	fprintf(stderr, "Problem inserting into  database, exiting\n");
 	goto allocerr6;
     }
 
-    fprintf(stdout, "Remember that by now, you should also have an extra passphrase word plus the password to decrypt your Account private keys, if you forgot them, it is better to repeat the process again before transfering any coins into your wallet\n"
-	    "Your mnemonic phrase is below, keep it safe and once you copy them, close this terminal screen, after that you can reconnect to the Internet if you were disconnected before:\n"
-	    "%s\n", mnem->mnemonic);
+    fprintf(stdout, "Remember that by now, you should also have an extra passphrase word plus the password to decrypt your Root Private Keys, if you forgot them, it is better to repeat the process again before transfering any coins into your wallet\n"
+	    "Your mnemonic phrase is below, keep it safe and once you copy them, close this terminal screen, after that you can reconnect to the Internet if you were disconnected before:\n\n"
+	    "\t%s\n\n", mnem->mnemonic);
 
  allocerr6:
     gcry_free(query_insert);
@@ -410,7 +409,7 @@ int32_t recover_wallet(void) {
     fprintf(stdout, "Passphrase registered successfully\n\n");
     pass_ctrl = 1;
 
-    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Account Keys into your wallet\n");
+    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Root Keys into your wallet\n");
     while(pass_ctrl) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
@@ -479,10 +478,10 @@ int32_t recover_wallet(void) {
 	 goto allocerr8;
      }
     
-    memset(child_keys[2].key_priv_chain, 0x11, 64);
+    memset(mnem->keys.key_priv_chain, 0x11, 64);
     query_insert->id = 0;
     query_insert->value_size = 1000;
-    err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
+    err = encrypt_AES256(query_insert->value, (uint8_t *)(&mnem->keys), sizeof(key_pair_t), (char *)(&passwd[1]));
     if (err) {
 	fprintf(stderr, "Problem encrypting keys\n");
 	error = -1;
@@ -494,7 +493,7 @@ int32_t recover_wallet(void) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
 	goto allocerr8;
     }
-    error = insert_key(query_insert, 1, "wallet", "account", "keys");
+    error = insert_key(query_insert, 1, "wallet", "root", "keys");
     if (error < 0) {
 	fprintf(stderr, "Problem inserting into  database, exiting\n");
 	goto allocerr8;
@@ -605,3 +604,114 @@ int32_t recover_wallet(void) {
     return error;    
 }
 
+int32_t show_key(void) {
+    gcry_error_t err = GPG_ERR_NO_ERROR;
+    int32_t error = 0;
+    uint32_t s_in_length = 0;
+    key_pair_t *root_keys = NULL;
+    query_return_t *query_return = NULL;
+    char *passwd = NULL;
+    key_address_t *keys_address = NULL;
+    uint8_t verifier[64] = {0};
+    uint8_t pass_marker = 1;
+    
+    err =libgcrypt_initializer();
+    if (!err) {
+	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
+	error = -1;
+	return error;
+    }
+
+    root_keys = (key_pair_t *)gcry_calloc_secure(1, sizeof(key_pair_t));
+    if (root_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    query_return = (query_return_t *)gcry_calloc_secure(1, sizeof(query_return_t));
+    if (query_return == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }
+    passwd = (char *)gcry_calloc_secure(70, sizeof(char));
+    if (passwd == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr3;
+    }
+    keys_address = (key_address_t *)gcry_calloc_secure(1, sizeof(key_address_t));
+    if (keys_address == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr4;
+    }
+
+    
+    error = read_key(query_return, "wallet", "root", "keys", "");
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr5;
+    }
+    
+    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
+    if (!((sizeof(key_pair_t))%16)) {
+	s_in_length = sizeof(key_pair_t)+16;
+    }
+    else {
+	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
+    }
+    s_in_length += 16;
+    memset(verifier, 0x11, 64);
+
+    fprintf(stdout, "Please type your password:\n");
+    while(pass_marker) {
+	error = getpasswd(passwd, password);
+	if (error) {
+	    fprintf(stderr, "Problem getting password from user\n");
+	}	
+	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
+	if (err) {
+	    printf("Problem decrypting message\n");
+	}
+	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
+	    fprintf(stdout, "Incorrect password, please try again:\n");
+	}
+	else {
+	    pass_marker = 0;
+	}
+    }
+
+    if (!pass_marker) {
+	err = ext_keys_address(keys_address, root_keys, NULL, 0, 0, wBIP84);
+	if (err) {
+	    error = -1;
+	    printf("Problem creating address from root keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
+	    goto allocerr5;
+	}
+	printf("\nPrinting root private key: \n");
+	for (uint32_t i = 0; i < 32; i++) {
+	    printf("%02x", root_keys->key_priv[i]);
+	}
+	printf("\nPrinting root compressed public key: \n");
+	for (uint32_t i = 0; i < 33; i++) {
+	    printf("%02x", root_keys->key_pub_comp[i]);
+	}
+	printf("\nPrinting Root key addresses: \n");
+	printf("%s\n", keys_address[0].xpriv);    
+	printf("%s\n", keys_address[0].xpub);
+    }
+
+ allocerr5:
+    gcry_free(keys_address);
+ allocerr4:
+    gcry_free(passwd);
+ allocerr3:
+    gcry_free(query_return);
+ allocerr2:
+    gcry_free(root_keys);
+ allocerr1:
+    gcry_control(GCRYCTL_TERM_SECMEM);
+    
+    return error;    
+}

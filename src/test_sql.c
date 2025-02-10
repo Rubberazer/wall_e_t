@@ -51,13 +51,13 @@ int main(int arg, char *arv[]) {
 	printf("Problem encrypting message, error code:%d", err);
     }
     
-    err = insert_key(&query_insert, 1, "wallet", "account", "keys");
+    err = insert_key(&query_insert, 1, "wallet", "root", "keys");
     if (err < 0) {
 	fprintf(stderr, "Problem inserting into  database, exiting\n");
 	exit(err);
     }
     
-    err = query_count("wallet", "account", "keys", "");
+    err = query_count("wallet", "root", "keys", "");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);
@@ -67,7 +67,7 @@ int main(int arg, char *arv[]) {
     
     query_return_t query_return[err];
     
-    err = read_key(query_return, "wallet", "account", "keys", "");
+    err = read_key(query_return, "wallet", "root", "keys", "");
     if (err < 0) {
 	fprintf(stderr, "Problem querying database, exiting\n");
 	exit(err);

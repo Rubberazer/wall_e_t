@@ -77,8 +77,8 @@ int32_t create_wallet_db(char *db_name) {
 	}
     }
 
-    // Create account table
-    strcpy(query, "CREATE TABLE account ("
+    // Create root table
+    strcpy(query, "CREATE TABLE root ("
 	   "id INTEGER PRIMARY KEY,"
 	   "keys BLOB"
 	   ");");

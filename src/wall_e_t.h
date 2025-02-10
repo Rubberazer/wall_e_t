@@ -294,7 +294,10 @@ void print_usage(void);
 /* Menu option to create a new wallet */
 int32_t create_wallet(void);
 
-/* Menu option to recover wallet from mnemonic and passphrase  */
+/* Menu option to recover wallet from mnemonic and passphrase */
 int32_t recover_wallet(void);
+
+/* Show account key on screen */
+int32_t show_key(void);
 
 #endif  // wall_e_t_h__
