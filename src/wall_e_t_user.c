@@ -664,6 +664,7 @@ int32_t show_key(void) {
     s_in_length += 16;
     memset(verifier, 0x11, 64);
 
+    fprintf(stdout, "This menu will show your Root key on screen. Maybe it is a good idea if you disconnect your computer from the Internet now?:\n");
     fprintf(stdout, "Please type your password:\n");
     while(pass_marker) {
 	error = getpasswd(passwd, password);
@@ -686,20 +687,16 @@ int32_t show_key(void) {
 	err = ext_keys_address(keys_address, root_keys, NULL, 0, 0, wBIP84);
 	if (err) {
 	    error = -1;
-	    printf("Problem creating address from root keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
+	    fprintf(stderr, "Problem creating address from root keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
 	    goto allocerr5;
 	}
-	printf("\nPrinting root private key: \n");
+	fprintf(stdout, "For your eyes only. This below is the Root Private Key in hexadecimal and extended key address format:\n\n"
+		"\t\t\t\t\t\t\tRoot Private Key\n"
+		"\t\t\t\tHexadecimal format\t\t\t\tExtended Key Address Format\n");	
 	for (uint32_t i = 0; i < 32; i++) {
-	    printf("%02x", root_keys->key_priv[i]);
+	    fprintf(stdout, "%02x", root_keys->key_priv[i]);
 	}
-	printf("\nPrinting root compressed public key: \n");
-	for (uint32_t i = 0; i < 33; i++) {
-	    printf("%02x", root_keys->key_pub_comp[i]);
-	}
-	printf("\nPrinting Root key addresses: \n");
-	printf("%s\n", keys_address[0].xpriv);    
-	printf("%s\n", keys_address[0].xpub);
+	fprintf(stdout, " | %s\n", keys_address->xpriv);
     }
 
  allocerr5:
