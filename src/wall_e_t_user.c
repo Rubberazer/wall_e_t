@@ -170,6 +170,8 @@ int32_t create_wallet(void) {
 	    break;
 	default:
 	    fprintf (stderr, "Number of words should be either: 12, 15, 18, 21 or 24\n");
+	    memset(nwords_answer, 0, strlen(nwords_answer));
+	    nwords = 0;
 	}
     }
 
@@ -215,9 +217,6 @@ int32_t create_wallet(void) {
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
 	}
-
-	printf("s_salt[0] & s_salt[1]:%s & %s\n", (char *)(&s_salt[0]), (char *)(&s_salt[1]) );
-	
 	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
 	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
 	    memset(s_salt, 0, 2*sizeof(word_t));
@@ -238,9 +237,6 @@ int32_t create_wallet(void) {
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
 	}
-
-	printf("passwd[0] & passwd[1]:%s & %s\n", (char *)(&passwd[0]), (char *)(&passwd[1]) );
-	
 	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
 	    fprintf(stdout, "Password doesn't match, please type it again\n");
 	    memset(passwd, 0, 2*sizeof(word_t));
@@ -329,7 +325,12 @@ int32_t recover_wallet(void) {
     uint8_t pass_ctrl = 1;
     query_return_t *query_insert = NULL;
     char *recover_mnem = NULL;
-
+    char addr_answer[5] = "";
+    uint32_t number_addresses = 0;
+    uint8_t addresses_menu = 1;
+    key_pair_t *address_keys = NULL;
+    char bech32_address[64] = {0};
+    
     err =libgcrypt_initializer();
     if (!err) {
 	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
@@ -353,7 +354,7 @@ int32_t recover_wallet(void) {
 	error = -1;
 	goto allocerr1;
     }
-    child_keys = (key_pair_t *)gcry_calloc_secure(3, sizeof(key_pair_t));
+    child_keys = (key_pair_t *)gcry_calloc_secure(5, sizeof(key_pair_t));
     if (child_keys == NULL) {
 	fprintf (stderr, "Problem allocating memory\n");
 	error = -1;
@@ -399,9 +400,6 @@ int32_t recover_wallet(void) {
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
 	}
-
-	printf("s_salt[0] & s_salt[1]:%s & %s\n", (char *)(&s_salt[0]), (char *)(&s_salt[1]) );
-	
 	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
 	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
 	    memset(s_salt, 0, 2*sizeof(word_t));
@@ -422,9 +420,6 @@ int32_t recover_wallet(void) {
 	if (error) {
 	    fprintf(stderr, "Problem getting password from user\n");
 	}
-
-	printf("passwd[0] & passwd[1]:%s & %s\n", (char *)(&passwd[0]), (char *)(&passwd[1]) );
-	
 	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
 	    fprintf(stdout, "Password doesn't match, please type it again\n");
 	    memset(passwd, 0, 2*sizeof(word_t));
@@ -461,8 +456,22 @@ int32_t recover_wallet(void) {
 	error = -1;
 	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
 	goto allocerr7;
-    }	
-
+    }
+    // Receive keys index = 0
+    err = key_deriv(&child_keys[3], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 0, normal_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr7;
+    }
+    // Change keys index = 1
+    err = key_deriv(&child_keys[4], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 1, normal_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr7;
+    }
+    
     memset(child_keys[2].key_priv_chain, 0x11, 64);
     query_insert->id = 0;
     err = encrypt_AES256(query_insert->value, (uint8_t *)(&child_keys[2]), sizeof(key_pair_t), (char *)(&passwd[1]));
@@ -483,8 +492,53 @@ int32_t recover_wallet(void) {
 	goto allocerr7;
     }
 
+    fprintf(stdout, "How many bitcoin addresses would you like to recover for both, your receiving and change addresses? Answer with a number between 0 to 500:\n");
+
+    while(addresses_menu) {
+	fgets(addr_answer, 5, stdin);
+	number_addresses = atoi(addr_answer);
+	if (number_addresses > 0 || number_addresses < 500) {
+	    address_keys = (key_pair_t *)gcry_calloc_secure(number_addresses, sizeof(key_pair_t));
+	    if (address_keys == NULL) {
+		fprintf (stderr, "Problem allocating memory\n");
+		error = -1;
+		goto allocerr8;
+	    }
+	    query_return_t address_insert[number_addresses];
+	    for (uint32_t i = 0; i < number_addresses; i++) {
+		err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), i, normal_child);
+		if (err) {
+		    error = -1;
+		    printf("Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+		    goto allocerr8;
+		}
+		err = bech32_encode(bech32_address, 64, (uint8_t *)(&address_keys[i].key_pub_comp), 33, bech32);
+		if (err) {
+		    error = -1;
+		    printf("Problem creating bech32 address from public key\n");
+		    goto allocerr8;
+		}
+		address_insert[i].id = i;
+		memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
+		memset(bech32_address, 0, 64);
+	    }
+	    error = insert_key(address_insert, number_addresses, "wallet", "receive", "address");
+	    if (error < 0) {
+		error = -1;
+		fprintf(stderr, "Problem inserting into  database, exiting\n");
+		goto allocerr8;
+	    }
+	    addresses_menu = 0;
+	}
+	else {
+	    fprintf(stdout, "Number should be between 0 and 500\n");
+	}
+    }
+    
     fprintf(stdout, "All done, now you should try to check your addresses and balances. You can reconnect to the Internet if you were disconnected before\n");
 
+ allocerr8:
+    gcry_free(address_keys);
  allocerr7:
     gcry_free(recover_mnem);
  allocerr6:

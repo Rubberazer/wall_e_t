@@ -47,7 +47,6 @@ int main(int argc, char **argv) {
 	    break;
 	case 'r':
 	    opt_mask = 0x02;
-	    fprintf(stdout, "Recover wallet\n");
 	    break;
 	case 'R':
 	    opt_mask = 0x04;
@@ -55,8 +54,16 @@ int main(int argc, char **argv) {
 	    break;
 	case 's':
 	    fprintf(stdout, "show\n");
-	    for (uint32_t i = optind-1; i < argc; i++)
-		printf ("Arguments %s\n", argv[i]);
+	    for (uint32_t i = optind-1; i < argc; i++) {
+		if (!strcmp(argv[i], "key")) {
+		    opt_mask = 0x08;
+		    break;
+		}
+		if (!strcmp(argv[i], "addresses")) {
+		    opt_mask = 0x10;
+		    break;
+		}
+	    }
 	    break;
 	case 'h': print_usage();
 	    break;
