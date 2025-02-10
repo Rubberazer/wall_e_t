@@ -170,7 +170,7 @@ int32_t create_wallet(void) {
 	    break;
 	default:
 	    fprintf (stderr, "Number of words should be either: 12, 15, 18, 21 or 24\n");
-	    memset(nwords_answer, 0, strlen(nwords_answer));
+	    memset(nwords_answer, 0, strlen(nwords_answer)*sizeof(char));
 	    nwords = 0;
 	}
     }
@@ -472,6 +472,12 @@ int32_t recover_wallet(void) {
 	fprintf(stderr, "Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
 	goto allocerr7;
     }
+     address_keys = (key_pair_t *)gcry_calloc_secure(500, sizeof(key_pair_t));
+     if (address_keys == NULL) {
+	 fprintf (stderr, "Problem allocating memory\n");
+	 error = -1;
+	 goto allocerr8;
+     }
     
     memset(child_keys[2].key_priv_chain, 0x11, 64);
     query_insert->id = 0;
@@ -480,32 +486,26 @@ int32_t recover_wallet(void) {
     if (err) {
 	fprintf(stderr, "Problem encrypting keys\n");
 	error = -1;
-	goto allocerr7;
+	goto allocerr8;
     }
 
     error = create_wallet_db("wallet");
     if (error) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
-	goto allocerr7;
+	goto allocerr8;
     }
     error = insert_key(query_insert, 1, "wallet", "account", "keys");
     if (error < 0) {
 	fprintf(stderr, "Problem inserting into  database, exiting\n");
-	goto allocerr7;
+	goto allocerr8;
     }
 
-    fprintf(stdout, "How many bitcoin addresses would you like to recover for both, your receiving and change addresses? Answer with a number between 0 to 500:\n");
+    fprintf(stdout, "How many bitcoin addresses would you like to recover in your receiving branch? Receiving addresses are the ones where coins are transfered to. Answer with a number between 0 to 500:\n");
 
     while(addresses_menu) {
 	fgets(addr_answer, 5, stdin);
 	number_addresses = atoi(addr_answer);
-	if (number_addresses > 0 || number_addresses < 500) {
-	    address_keys = (key_pair_t *)gcry_calloc_secure(number_addresses, sizeof(key_pair_t));
-	    if (address_keys == NULL) {
-		fprintf (stderr, "Problem allocating memory\n");
-		error = -1;
-		goto allocerr8;
-	    }
+	if (number_addresses > 0 && number_addresses < 501) {
 	    query_return_t address_insert[number_addresses];
 	    for (uint32_t i = 0; i < number_addresses; i++) {
 		err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), i, normal_child);
@@ -521,9 +521,9 @@ int32_t recover_wallet(void) {
 		    goto allocerr8;
 		}
 		address_insert[i].id = i;
-		address_insert[i].value_size = 42;
+		address_insert[i].value_size = strlen(bech32_address)*sizeof(char);
 		memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
-		memset(bech32_address, 0, 64);
+		memset(bech32_address, 0, 64*sizeof(char));
 	    }
 	    error = insert_key(address_insert, number_addresses, "wallet", "receive", "address");
 	    if (error < 0) {
@@ -531,6 +531,51 @@ int32_t recover_wallet(void) {
 		fprintf(stderr, "Problem inserting into  database, exiting\n");
 		goto allocerr8;
 	    }
+	    addresses_menu = 0;
+	}
+	else if (number_addresses == 0){
+	    addresses_menu = 0;
+	}
+	else {
+	    fprintf(stdout, "Number should be between 0 and 500\n");
+	}
+    }
+    addresses_menu = 1;
+    
+     fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you transfer coins, but not all of them into an address. Answer with a number between 0 to 500:\n");
+
+    while(addresses_menu) {
+	fgets(addr_answer, 5, stdin);
+	number_addresses = atoi(addr_answer);
+	if (number_addresses > 0 && number_addresses < 501) {
+	    query_return_t address_insert[number_addresses];
+	    for (uint32_t i = 0; i < number_addresses; i++) {
+		err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[4].key_priv), (uint8_t *)(&child_keys[4].chain_code), i, normal_child);
+		if (err) {
+		    error = -1;
+		    printf("Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+		    goto allocerr8;
+		}
+		err = bech32_encode(bech32_address, 64, (uint8_t *)(&address_keys[i].key_pub_comp), 33, bech32);
+		if (err) {
+		    error = -1;
+		    printf("Problem creating bech32 address from public key\n");
+		    goto allocerr8;
+		}
+		address_insert[i].id = i;
+		address_insert[i].value_size = strlen(bech32_address)*sizeof(char);
+		memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
+		memset(bech32_address, 0, 64*sizeof(char));
+	    }
+	    error = insert_key(address_insert, number_addresses, "wallet", "change", "address");
+	    if (error < 0) {
+		error = -1;
+		fprintf(stderr, "Problem inserting into  database, exiting\n");
+		goto allocerr8;
+	    }
+	    addresses_menu = 0;
+	}
+	else if (number_addresses == 0){
 	    addresses_menu = 0;
 	}
 	else {
