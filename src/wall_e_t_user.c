@@ -251,7 +251,7 @@ int32_t create_wallet(void) {
     err = create_mnemonic((char *)(&s_salt[1]), nwords, mnem);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem creating mnemonic, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem creating mnemonic\n");
 	goto allocerr6;
     }
     // Deriving keys
@@ -259,21 +259,21 @@ int32_t create_wallet(void) {
     err = key_deriv(&child_keys[0], mnem->keys.key_priv, mnem->keys.chain_code, BIP84, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving purpose keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving purpose keys\n");
 	goto allocerr6;
     }	
     // Coin: Bitcoin
     err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving coin keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving coin keys\n");
 	goto allocerr6;
     }	
     // Account keys
     err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving account keys\n");
 	goto allocerr6;
     }	
 
@@ -329,10 +329,9 @@ int32_t recover_wallet(void) {
     uint8_t pass_ctrl = 1;
     query_return_t *query_insert = NULL;
     char *recover_mnem = NULL;
-    char addr_answer[5] = "";
+    char addr_answer[6] = "";
     uint32_t number_addresses = 0;
     uint8_t addresses_menu = 1;
-    key_pair_t *address_keys = NULL;
     char bech32_address[64] = {0};
     
     err =libgcrypt_initializer();
@@ -440,7 +439,7 @@ int32_t recover_wallet(void) {
     err = recover_from_mnemonic(recover_mnem, (char *)(&s_salt[1]), mnem);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem recovering from mnemonic, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem recovering from mnemonic\n");
 	goto allocerr7;
     }
     // Deriving keys
@@ -448,35 +447,35 @@ int32_t recover_wallet(void) {
     err = key_deriv(&child_keys[0], mnem->keys.key_priv, mnem->keys.chain_code, BIP84, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving purpose keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving purpose keys\n");
 	goto allocerr7;
     }	
     // Coin: Bitcoin
     err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving coin keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving coin keys\n");
 	goto allocerr7;
     }	
     // Account keys
     err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving account keys\n");
 	goto allocerr7;
     }
     // Receive keys index = 0
     err = key_deriv(&child_keys[3], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 0, normal_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving receive keys\n");
 	goto allocerr7;
     }
     // Change keys index = 1
     err = key_deriv(&child_keys[4], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 1, normal_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving change keys\n");
 	goto allocerr7;
     }
     
@@ -501,44 +500,12 @@ int32_t recover_wallet(void) {
 	goto allocerr7;
     }
 
-    address_keys = (key_pair_t *)gcry_calloc_secure(500, sizeof(key_pair_t));
-    if (address_keys == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr8;
-    }
-
-    fprintf(stdout, "How many bitcoin addresses would you like to recover in your receiving branch? Receiving addresses are the ones where coins are transfered to. Answer with a number between 0 to 500:\n");
+    fprintf(stdout, "How many bitcoin addresses would you like to recover in your receiving branch? Receiving addresses are the ones where coins are transfered to. Answer with a number between 0 to 1000:\n");
 
     while(addresses_menu) {
-	fgets(addr_answer, 5, stdin);
+	fgets(addr_answer, 6, stdin);
 	number_addresses = atoi(addr_answer);
-	if (number_addresses > 0 && number_addresses < 501) {
-	    query_return_t address_insert[number_addresses];
-	    for (uint32_t i = 0; i < number_addresses; i++) {
-		err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), i, normal_child);
-		if (err) {
-		    error = -1;
-		    printf("Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
-		    goto allocerr8;
-		}
-		err = bech32_encode(bech32_address, 64, (uint8_t *)(&address_keys[i].key_pub_comp), 33, bech32);
-		if (err) {
-		    error = -1;
-		    printf("Problem creating bech32 address from public key\n");
-		    goto allocerr8;
-		}
-		address_insert[i].id = i;
-		address_insert[i].value_size = strlen(bech32_address)*sizeof(char);
-		memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
-		memset(bech32_address, 0, 64*sizeof(char));
-	    }
-	    error = insert_key(address_insert, number_addresses, "wallet", "receive", "address");
-	    if (error < 0) {
-		error = -1;
-		fprintf(stderr, "Problem inserting into  database, exiting\n");
-		goto allocerr8;
-	    }
+	if (number_addresses > 0 && number_addresses < 1001) {	
 	    addresses_menu = 0;
 	}
 	else if (number_addresses == 0){
@@ -548,54 +515,127 @@ int32_t recover_wallet(void) {
 	    fprintf(stdout, "Number should be between 0 and 500\n");
 	}
     }
+    
+    if (number_addresses) {
+	key_pair_t *address_keys = NULL;
+	query_return_t *address_insert = NULL;
+	address_keys = (key_pair_t *)calloc(number_addresses, sizeof(key_pair_t));
+	if (address_keys == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr7;
+	}
+	address_insert = (query_return_t *)calloc(number_addresses, sizeof(query_return_t));
+	if (address_insert == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    free(address_keys);
+	    goto allocerr7;
+	}
+	
+	for (uint32_t i = 0; i < number_addresses; i++) {
+	    err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), i, normal_child);
+	    if (err) {
+		error = -1;
+		fprintf(stderr, "Problem deriving receive keys\n");
+		free(address_keys);
+		free(address_insert);
+		goto allocerr7;
+	    }
+	    err = bech32_encode(bech32_address, 64, (uint8_t *)(&address_keys[i].key_pub_comp), 33, bech32);
+	    if (err) {
+		error = -1;
+		fprintf(stderr, "Problem creating bech32 address from public key\n");
+		free(address_keys);
+		free(address_insert);
+		goto allocerr7;
+	    }
+	    address_insert[i].id = i;
+	    address_insert[i].value_size = strlen(bech32_address)*sizeof(char);
+	    memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
+	    memset(bech32_address, 0, 64*sizeof(char));
+	}
+	free(address_keys);
+	error = insert_key(address_insert, number_addresses, "wallet", "receive", "address");
+	if (error < 0) {
+	    error = -1;
+	    fprintf(stderr, "Problem inserting into  database, exiting\n");
+	    goto allocerr7;
+	}
+	free(address_insert);
+    }
+    
+    fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you do a transfer. Answer with a number between 0 to 1000:\n");
+
     addresses_menu = 1;
-    memset(address_keys, 0, 500*sizeof(key_pair_t));
-    
-    fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you do a transfer. Answer with a number between 0 to 500:\n");
-
+    number_addresses = 0;
+    memset(addr_answer, 0, 6*sizeof(char));
     while(addresses_menu) {
-	fgets(addr_answer, 5, stdin);
+	fgets(addr_answer, 6, stdin);
 	number_addresses = atoi(addr_answer);
-	if (number_addresses > 0 && number_addresses < 501) {
-	    query_return_t address_insert[number_addresses];
-	    for (uint32_t i = 0; i < number_addresses; i++) {
-		err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[4].key_priv), (uint8_t *)(&child_keys[4].chain_code), i, normal_child);
-		if (err) {
-		    error = -1;
-		    printf("Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
-		    goto allocerr8;
-		}
-		err = bech32_encode(bech32_address, 64, (uint8_t *)(&address_keys[i].key_pub_comp), 33, bech32);
-		if (err) {
-		    error = -1;
-		    printf("Problem creating bech32 address from public key\n");
-		    goto allocerr8;
-		}
-		address_insert[i].id = i;
-		address_insert[i].value_size = strlen(bech32_address)*sizeof(char);
-		memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
-		memset(bech32_address, 0, 64*sizeof(char));
-	    }
-	    error = insert_key(address_insert, number_addresses, "wallet", "change", "address");
-	    if (error < 0) {
-		error = -1;
-		fprintf(stderr, "Problem inserting into  database, exiting\n");
-		goto allocerr8;
-	    }
+	if (number_addresses > 0 && number_addresses < 1001) {	
 	    addresses_menu = 0;
 	}
 	else if (number_addresses == 0){
 	    addresses_menu = 0;
 	}
 	else {
-	    fprintf(stdout, "Number should be between 0 and 500\n");
+	    fprintf(stdout, "Number should be between 0 and 1000\n");
 	}
     }
     
+    if (number_addresses) {
+	key_pair_t *address_keys = NULL;
+	query_return_t *address_insert = NULL;
+	address_keys = (key_pair_t *)calloc(number_addresses, sizeof(key_pair_t));
+	if (address_keys == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr7;
+	}
+	address_insert = (query_return_t *)calloc(number_addresses, sizeof(query_return_t));
+	if (address_insert == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    free(address_keys);
+	    goto allocerr7;
+	}
+
+	for (uint32_t i = 0; i < number_addresses; i++) {
+	    err = key_deriv(&address_keys[i], (uint8_t *)(&child_keys[4].key_priv), (uint8_t *)(&child_keys[4].chain_code), i, normal_child);
+	    if (err) {
+		error = -1;
+		fprintf(stderr, "Problem deriving receive keys\n");
+		free(address_keys);
+		free(address_insert);
+		goto allocerr7;
+	    }
+	    err = bech32_encode(bech32_address, 64, (uint8_t *)(&address_keys[i].key_pub_comp), 33, bech32);
+	    if (err) {
+		error = -1;
+		fprintf(stderr, "Problem creating bech32 address from public key\n");
+		free(address_keys);
+		free(address_insert);
+		goto allocerr7;
+	    }
+	    address_insert[i].id = i;
+	    address_insert[i].value_size = strlen(bech32_address)*sizeof(char);
+	    memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
+	    memset(bech32_address, 0, 64*sizeof(char));
+	}
+	free(address_keys);
+	error = insert_key(address_insert, number_addresses, "wallet", "change", "address");
+	if (error < 0) {
+	    error = -1;
+	    fprintf(stderr, "Problem inserting into  database, exiting\n");
+	    goto allocerr7;
+	}
+	free(address_insert);
+    }
+       
     fprintf(stdout, "All done, now you should try to check your addresses and balances. You can reconnect to the Internet if you were disconnected before\n");
     
- allocerr8:
-    gcry_free(address_keys);
+
  allocerr7:
     gcry_free(recover_mnem);
  allocerr6:
@@ -683,7 +723,7 @@ int32_t show_key(void) {
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
 	if (err) {
-	    printf("Problem decrypting message\n");
+	    fprintf(stderr, "Problem decrypting message\n");
 	    err = GPG_ERR_NO_ERROR;
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
@@ -699,7 +739,7 @@ int32_t show_key(void) {
 	err = ext_keys_address(keys_address, root_keys, NULL, 0, 0, wBIP84);
 	if (err) {
 	    error = -1;
-	    fprintf(stderr, "Problem creating address from root keys, %s, %s", gcry_strerror(err), gcry_strsource(err));
+	    fprintf(stderr, "Problem creating address from root keys\n");
 	    goto allocerr5;
 	}
 	fprintf(stdout, "For your eyes only. This below is the Root Private Key in hexadecimal and extended key address format:\n\n"
@@ -802,7 +842,7 @@ int32_t receive_coin(void) {
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
 	if (err) {
-	    printf("Problem decrypting message\n");
+	    fprintf(stderr, "Problem decrypting message\n");
 	    err = GPG_ERR_NO_ERROR;
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
@@ -819,28 +859,28 @@ int32_t receive_coin(void) {
     err = key_deriv(&child_keys[0], root_keys->key_priv, root_keys->chain_code, BIP84, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving purpose keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving purpose keys\n");
 	goto allocerr6;
     }	
     // Coin: Bitcoin
     err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving coin keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving coin keys\n");
 	goto allocerr6;
     }	
     // Account keys
     err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving account keys\n");
 	goto allocerr6;
     }
     // Receive keys index = 0
     err = key_deriv(&child_keys[3], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 0, normal_child);
     if (err) {
 	error = -1;
-	fprintf(stderr, "Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving receive keys\n");
 	goto allocerr6;
     }
         
@@ -854,13 +894,13 @@ int32_t receive_coin(void) {
     err = key_deriv(&child_keys[4], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), count_addresses, normal_child);
     if (err) {
 	error = -1;
-	printf("Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	fprintf(stderr, "Problem deriving receive keys\n");
 	goto allocerr6;
     }
     err = bech32_encode(bech32_address, 64, (uint8_t *)(&child_keys[4].key_pub_comp), 33, bech32);
     if (err) {
 	error = -1;
-	printf("Problem creating bech32 address from public key\n");
+	fprintf(stderr, "Problem creating bech32 address from public key\n");
 	goto allocerr6;
     }
 
