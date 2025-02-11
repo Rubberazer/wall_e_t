@@ -210,11 +210,13 @@ int32_t create_wallet(void) {
 	error = getpasswd((char *)(&s_salt[0]), passphrase);
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
+	    error = 0;
 	}
 	fprintf(stdout, "Confirm your passphrase please\n");
 	error = getpasswd((char *)(&s_salt[1]), passphrase);
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
+	    error = 0;
 	}
 	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
 	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
@@ -230,11 +232,13 @@ int32_t create_wallet(void) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
 	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
 	}
 	fprintf(stdout, "Confirm your password please\n");
 	error = getpasswd((char *)(&passwd[1]), password);
 	if (error) {
-	    fprintf(stderr, "Problem getting passphrase from user\n");
+	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
 	}
 	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
 	    fprintf(stdout, "Password doesn't match, please type it again\n");
@@ -394,11 +398,13 @@ int32_t recover_wallet(void) {
 	error = getpasswd((char *)(&s_salt[0]), passphrase);
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
+	    error = 0;
 	}
 	fprintf(stdout, "Confirm your passphrase please\n");
 	error = getpasswd((char *)(&s_salt[1]), passphrase);
 	if (error) {
 	    fprintf(stderr, "Problem getting passphrase from user\n");
+	    error = 0;
 	}
 	if (strcmp((char *)(&s_salt[0]), (char *)(&s_salt[1]))) {
 	    fprintf(stdout, "Passphrase doesn't match, please type it again\n");
@@ -414,11 +420,13 @@ int32_t recover_wallet(void) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
 	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
 	}
 	fprintf(stdout, "Confirm your password please\n");
 	error = getpasswd((char *)(&passwd[1]), password);
 	if (error) {
 	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
 	}
 	if (strcmp((char *)(&passwd[0]), (char *)(&passwd[1]))) {
 	    fprintf(stdout, "Password doesn't match, please type it again\n");
@@ -471,12 +479,6 @@ int32_t recover_wallet(void) {
 	fprintf(stderr, "Problem deriving change keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
 	goto allocerr7;
     }
-     address_keys = (key_pair_t *)gcry_calloc_secure(500, sizeof(key_pair_t));
-     if (address_keys == NULL) {
-	 fprintf (stderr, "Problem allocating memory\n");
-	 error = -1;
-	 goto allocerr8;
-     }
     
     memset(mnem->keys.key_priv_chain, 0x11, 64);
     query_insert->id = 0;
@@ -485,17 +487,24 @@ int32_t recover_wallet(void) {
     if (err) {
 	fprintf(stderr, "Problem encrypting keys\n");
 	error = -1;
-	goto allocerr8;
+	goto allocerr7;
     }
 
     error = create_wallet_db("wallet");
     if (error) {
 	fprintf(stderr, "Problem creating database file, exiting\n");
-	goto allocerr8;
+	goto allocerr7;
     }
     error = insert_key(query_insert, 1, "wallet", "root", "keys");
     if (error < 0) {
 	fprintf(stderr, "Problem inserting into  database, exiting\n");
+	goto allocerr7;
+    }
+
+    address_keys = (key_pair_t *)gcry_calloc_secure(500, sizeof(key_pair_t));
+    if (address_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
 	goto allocerr8;
     }
 
@@ -540,8 +549,9 @@ int32_t recover_wallet(void) {
 	}
     }
     addresses_menu = 1;
+    memset(address_keys, 0, 500*sizeof(key_pair_t));
     
-     fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you do a transfer. Answer with a number between 0 to 500:\n");
+    fprintf(stdout, "How many bitcoin addresses would you like to recover in your change branch? Change addresses are the ones that receive change coins when you do a transfer. Answer with a number between 0 to 500:\n");
 
     while(addresses_menu) {
 	fgets(addr_answer, 5, stdin);
@@ -646,7 +656,6 @@ int32_t show_key(void) {
 	error = -1;
 	goto allocerr4;
     }
-
     
     error = read_key(query_return, "wallet", "root", "keys", "");
     if (error < 0) {
@@ -670,13 +679,16 @@ int32_t show_key(void) {
 	error = getpasswd(passwd, password);
 	if (error) {
 	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
 	if (err) {
 	    printf("Problem decrypting message\n");
+	    err = GPG_ERR_NO_ERROR;
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
 	    fprintf(stdout, "Incorrect password, please try again:\n");
+	    memset(passwd, 0, 70);
 	}
 	else {
 	    pass_marker = 0;
@@ -710,5 +722,172 @@ int32_t show_key(void) {
  allocerr1:
     gcry_control(GCRYCTL_TERM_SECMEM);
     
+    return error;    
+}
+
+int32_t receive_coin(void) {
+    gcry_error_t err = GPG_ERR_NO_ERROR;
+    int32_t error = 0;
+    key_pair_t *child_keys = NULL;
+    char *passwd = NULL;
+    query_return_t *query_insert = NULL;
+    query_return_t *query_return = NULL;
+    key_pair_t *root_keys = NULL;
+    uint32_t count_addresses = 0;
+    char bech32_address[64] = {0};
+    uint8_t verifier[64] = {0};
+    uint8_t pass_marker = 1;
+    uint32_t s_in_length = 0;
+	
+    err =libgcrypt_initializer();
+    if (!err) {
+	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
+	error = -1;
+	return error;
+    }
+
+    child_keys = (key_pair_t *)gcry_calloc_secure(5, sizeof(key_pair_t));
+    if (child_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    passwd = (char *)gcry_calloc_secure(70, sizeof(char));
+    if (passwd == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }
+    query_insert = (query_return_t *)gcry_calloc_secure(1, sizeof(query_return_t));
+    if (query_insert == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr3;
+    }
+    query_return = (query_return_t *)gcry_calloc_secure(1, sizeof(query_return_t));
+    if (query_return == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr4;
+    }
+    root_keys = (key_pair_t *)gcry_calloc_secure(1, sizeof(key_pair_t));
+    if (root_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr5;
+    }
+    
+    error = read_key(query_return, "wallet", "root", "keys", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr6;
+    }
+    
+    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
+    if (!((sizeof(key_pair_t))%16)) {
+	s_in_length = sizeof(key_pair_t)+16;
+    }
+    else {
+	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
+    }
+    s_in_length += 16;
+    memset(verifier, 0x11, 64);
+
+    fprintf(stdout, "Please type your password:\n");
+    while(pass_marker) {
+	error = getpasswd(passwd, password);
+	if (error) {
+	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
+	}	
+	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
+	if (err) {
+	    printf("Problem decrypting message\n");
+	    err = GPG_ERR_NO_ERROR;
+	}
+	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
+	    fprintf(stdout, "Incorrect password, please try again:\n");
+	    memset(passwd, 0, 70);
+	}
+	else {
+	    pass_marker = 0;
+	}
+    }
+    
+    // Deriving keys
+    // Purpose: BIP84
+    err = key_deriv(&child_keys[0], root_keys->key_priv, root_keys->chain_code, BIP84, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving purpose keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }	
+    // Coin: Bitcoin
+    err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving coin keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }	
+    // Account keys
+    err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving account keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }
+    // Receive keys index = 0
+    err = key_deriv(&child_keys[3], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 0, normal_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }
+        
+    error = query_count("wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	return error;
+    }
+    count_addresses = error;
+
+    err = key_deriv(&child_keys[4], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), count_addresses, normal_child);
+    if (err) {
+	error = -1;
+	printf("Problem deriving receive keys, error code:%s, %s", gcry_strerror(err), gcry_strsource(err));
+	goto allocerr6;
+    }
+    err = bech32_encode(bech32_address, 64, (uint8_t *)(&child_keys[4].key_pub_comp), 33, bech32);
+    if (err) {
+	error = -1;
+	printf("Problem creating bech32 address from public key\n");
+	goto allocerr6;
+    }
+
+    query_insert->id = count_addresses;
+    query_insert->value_size = strlen(bech32_address)*sizeof(char);
+    memcpy(query_insert->value, bech32_address, strlen(bech32_address)*sizeof(char));
+    error = insert_key(query_insert, 1, "wallet", "receive", "address");
+    if (error < 0) {
+	error = -1;
+	fprintf(stderr, "Problem inserting into  database, exiting\n");
+	goto allocerr6;
+    }
+
+    fprintf(stdout, "This address has been added to your wallet:\n%s\n", bech32_address);
+
+ allocerr6:
+    gcry_free(root_keys);
+ allocerr5:
+    gcry_free(query_return);
+ allocerr4:
+    gcry_free(query_insert);
+ allocerr3:
+    gcry_free(password); 
+ allocerr2:
+    gcry_free(child_keys);
+ allocerr1:
+    gcry_control(GCRYCTL_TERM_SECMEM);
+
     return error;    
 }

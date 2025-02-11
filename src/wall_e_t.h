@@ -300,4 +300,7 @@ int32_t recover_wallet(void);
 /* Show account key on screen */
 int32_t show_key(void);
 
+/* Generate new bitcoin address on the receive branch of the wallet*/
+int32_t receive_coin(void);
+
 #endif  // wall_e_t_h__

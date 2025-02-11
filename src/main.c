@@ -50,10 +50,8 @@ int main(int argc, char **argv) {
 	    break;
 	case 'R':
 	    opt_mask = 0x04;
-	    fprintf(stdout, "Receive bitcoin\n");
 	    break;
 	case 's':
-	    fprintf(stdout, "show\n");
 	    for (uint32_t i = optind-1; i < argc; i++) {
 		if (!strcmp(argv[i], "key")) {
 		    opt_mask = 0x08;
@@ -79,7 +77,7 @@ int main(int argc, char **argv) {
 	}
 	else {fprintf(stdout, "Wallet created successfully\n");}
     }
-     if (opt_mask == 0x02) {
+    if (opt_mask == 0x02) {
 	err = recover_wallet();
 	if (err) {
 	    fprintf(stderr, "Problem recovering wallet, exiting\n");
@@ -87,13 +85,19 @@ int main(int argc, char **argv) {
 	}
 	else {fprintf(stdout, "Wallet recovered successfully\n");}
     }    
-     if (opt_mask == 0x08) {
-	 err = show_key();
+    if (opt_mask == 0x04) {
+	err = receive_coin();
 	if (err) {
-	    fprintf(stderr, "Problem showing Account key, exiting\n");
+	    fprintf(stderr, "Problem generating new bitcoin address, exiting\n");
 	    exit(err);
 	}
-     }    
+    }    
+    if (opt_mask == 0x08) {
+	err = show_key();
+	if (err) {
+	    fprintf(stderr, "Problem showing Account key, exiting\n");
+	}
+    }    
    
     exit(err);	
 }

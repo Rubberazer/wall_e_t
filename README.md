@@ -46,6 +46,11 @@ This will recover your wallet starting from a mnemonic phrase and an optional pa
 
 	./wall_e_t -recover
 
+### Receive coin
+This will geberate a new bitcoin address in your wallet's "receive" branch and show it on screen
+
+	./wall_e_t -receive
+
 ### Show key
 This will show your Private Root key on screen 
 
