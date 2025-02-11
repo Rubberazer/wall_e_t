@@ -519,7 +519,7 @@ int32_t recover_wallet(void) {
     if (number_addresses) {
 	key_pair_t *address_keys = NULL;
 	query_return_t *address_insert = NULL;
-	address_keys = (key_pair_t *)calloc(number_addresses, sizeof(key_pair_t));
+	address_keys = (key_pair_t *)gcry_calloc_secure(number_addresses, sizeof(key_pair_t));
 	if (address_keys == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
 	    error = -1;
@@ -529,7 +529,7 @@ int32_t recover_wallet(void) {
 	if (address_insert == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
 	    error = -1;
-	    free(address_keys);
+	    gcry_free(address_keys);
 	    goto allocerr7;
 	}
 	
@@ -538,7 +538,7 @@ int32_t recover_wallet(void) {
 	    if (err) {
 		error = -1;
 		fprintf(stderr, "Problem deriving receive keys\n");
-		free(address_keys);
+		gcry_free(address_keys);
 		free(address_insert);
 		goto allocerr7;
 	    }
@@ -546,7 +546,7 @@ int32_t recover_wallet(void) {
 	    if (err) {
 		error = -1;
 		fprintf(stderr, "Problem creating bech32 address from public key\n");
-		free(address_keys);
+		gcry_free(address_keys);
 		free(address_insert);
 		goto allocerr7;
 	    }
@@ -555,7 +555,7 @@ int32_t recover_wallet(void) {
 	    memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
 	    memset(bech32_address, 0, 64*sizeof(char));
 	}
-	free(address_keys);
+	gcry_free(address_keys);
 	error = insert_key(address_insert, number_addresses, "wallet", "receive", "address");
 	if (error < 0) {
 	    error = -1;
@@ -587,7 +587,7 @@ int32_t recover_wallet(void) {
     if (number_addresses) {
 	key_pair_t *address_keys = NULL;
 	query_return_t *address_insert = NULL;
-	address_keys = (key_pair_t *)calloc(number_addresses, sizeof(key_pair_t));
+	address_keys = (key_pair_t *)gcry_calloc_secure(number_addresses, sizeof(key_pair_t));
 	if (address_keys == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
 	    error = -1;
@@ -597,7 +597,7 @@ int32_t recover_wallet(void) {
 	if (address_insert == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
 	    error = -1;
-	    free(address_keys);
+	    gcry_free(address_keys);
 	    goto allocerr7;
 	}
 
@@ -606,7 +606,7 @@ int32_t recover_wallet(void) {
 	    if (err) {
 		error = -1;
 		fprintf(stderr, "Problem deriving receive keys\n");
-		free(address_keys);
+		gcry_free(address_keys);
 		free(address_insert);
 		goto allocerr7;
 	    }
@@ -614,7 +614,7 @@ int32_t recover_wallet(void) {
 	    if (err) {
 		error = -1;
 		fprintf(stderr, "Problem creating bech32 address from public key\n");
-		free(address_keys);
+		gcry_free(address_keys);
 		free(address_insert);
 		goto allocerr7;
 	    }
@@ -623,7 +623,7 @@ int32_t recover_wallet(void) {
 	    memcpy(address_insert[i].value, bech32_address, strlen(bech32_address));
 	    memset(bech32_address, 0, 64*sizeof(char));
 	}
-	free(address_keys);
+	gcry_free(address_keys);
 	error = insert_key(address_insert, number_addresses, "wallet", "change", "address");
 	if (error < 0) {
 	    error = -1;
