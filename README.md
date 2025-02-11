@@ -46,11 +46,11 @@ This will recover your wallet starting from a mnemonic phrase and an optional pa
 
 	./wall_e_t -recover
 
-### Receive coin
-This will generate a new bitcoin address in your wallet's "receive" branch and show it on screen
+### Receive
+This will create a new bitcoin address so you can receive coins, and store this address in your wallet
 
-	./wall_e_t -receive
-
+    ./wall_e_t -receive
+	
 ### Show key
 This will show your Private Root key on screen 
 
@@ -66,10 +66,10 @@ This will show all your bitcoin addresses with their respective private keys on 
 
     ./wall_e_t -show keys
 
-### Receive (not ready yet)
-This will create a new bitcoin address so you can receive coins, and store this address in your wallet
+### Balance (not ready yet)
+This will show on screen the amount of satoshis per bitcoin address in your wallet
 
-    ./wall_e_t -receive
+    ./wall_e_t -balance
 	
 ### Transfer (not ready yet)
 To transfer your coins to some other address
