@@ -61,7 +61,7 @@ This will show all your bitcoin addresses on screen
 
     ./wall_e_t -show addresses
 
-### Show keys (not ready yet)
+### Show keys
 This will show all your bitcoin addresses with their respective private keys on screen
 
     ./wall_e_t -show keys
