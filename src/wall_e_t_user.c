@@ -1165,6 +1165,7 @@ int32_t show_keys(void) {
 	    goto allocerr7;
 	}
     }
+
     error = query_count("wallet", "change", "address", NULL);
     if (error < 0) {
 	fprintf(stderr, "Problem querying database\n");
@@ -1243,15 +1244,23 @@ int32_t show_keys(void) {
     }
 
  allocerr11:
-    gcry_free(WIF_change);
+    if (count_change) {
+	gcry_free(WIF_change);
+    }
  allocerr10:
-    gcry_free(address_change);
+    if (count_change) {
+	gcry_free(address_change);
+    }
  allocerr9:
     free(query_change);
  allocerr8:
-    gcry_free(WIF_receive);
+    if (count_receive) {
+	gcry_free(WIF_receive);
+    }
  allocerr7:
-    gcry_free(address_receive);
+    if (count_receive) {
+	gcry_free(address_receive);
+    }
  allocerr6:    
     free(query_receive);
  allocerr5:
