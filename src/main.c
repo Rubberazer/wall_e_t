@@ -89,7 +89,6 @@ int main(int argc, char **argv) {
 	err = receive_coin();
 	if (err) {
 	    fprintf(stderr, "Problem generating new bitcoin address, exiting\n");
-	    exit(err);
 	}
     }    
     if (opt_mask == 0x08) {
@@ -98,6 +97,12 @@ int main(int argc, char **argv) {
 	    fprintf(stderr, "Problem showing Account key, exiting\n");
 	}
     }    
-   
+    if (opt_mask == 0x10) {
+	err = show_addresses();
+	if (err) {
+	    fprintf(stderr, "Problem showing addresses, exiting\n");
+	}
+    }    
+    
     exit(err);	
 }

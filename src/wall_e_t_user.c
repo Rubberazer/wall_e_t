@@ -931,3 +931,74 @@ int32_t receive_coin(void) {
 
     return error;    
 }
+
+int32_t show_addresses(void) {
+    int32_t error = 0;
+    query_return_t *query_receive = NULL;
+    query_return_t *query_change = NULL;
+    uint32_t count_receive = 0;
+    uint32_t count_change = 0;
+    char bitcoin_address[64] = {};
+    
+    error = query_count("wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	return error;
+    }
+    count_receive = error;
+
+    query_receive = (query_return_t *)calloc(count_receive, sizeof(query_return_t));
+    if (query_receive == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    
+    error = read_key(query_receive, "wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr2;
+    }
+
+    error = query_count("wallet", "change", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	return error;
+    }
+    count_change = error;
+
+    query_change = (query_return_t *)calloc(count_change, sizeof(query_return_t));
+    if (query_change == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }
+    
+    error = read_key(query_change, "wallet", "change", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr3;
+    }
+
+    fprintf(stdout, "\t\tReceive addresses\n");
+    for (uint32_t i = 0; i < count_receive; i++) {
+	memcpy(bitcoin_address, &query_receive[i].value, 64*sizeof(char));
+	fprintf(stdout,"%u | %s\n", query_receive[i].id, bitcoin_address);
+	memset(bitcoin_address, 0, 64*sizeof(char));
+    }
+    fprintf(stdout, "\n");
+    fprintf(stdout, "\t\tChange addresses\n");
+    for (uint32_t i = 0; i < count_change; i++) {
+	memcpy(bitcoin_address, &query_change[i].value, 64*sizeof(char));
+	fprintf(stdout, "%u | %s\n", query_change[i].id, bitcoin_address);
+	memset(bitcoin_address, 0, 64*sizeof(char));
+    }
+    
+ allocerr3:
+    free(query_change);
+ allocerr2:    
+    free(query_receive);
+ allocerr1:
+    
+    return error;    
+}
