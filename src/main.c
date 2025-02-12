@@ -108,6 +108,12 @@ int main(int argc, char **argv) {
 	    fprintf(stderr, "Problem showing addresses, exiting\n");
 	}
     }    
+    if (opt_mask == 0x11) {
+	err = show_keys();
+	if (err) {
+	    fprintf(stderr, "Problem showing keys&addresses, exiting\n");
+	}
+    }    
     
     exit(err);	
 }

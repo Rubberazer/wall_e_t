@@ -305,5 +305,8 @@ int32_t receive_coin(void);
 
 /* Show all bitcoin addreses in wallet */
 int32_t show_addresses(void);
-    
+
+/* Show all private keys i WIF format and addresses */
+int32_t show_keys(void);
+
 #endif  // wall_e_t_h__

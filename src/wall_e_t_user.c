@@ -938,7 +938,7 @@ int32_t show_addresses(void) {
     query_return_t *query_change = NULL;
     uint32_t count_receive = 0;
     uint32_t count_change = 0;
-    char bitcoin_address[64] = {};
+    char bitcoin_address[64] = {0};
     
     error = query_count("wallet", "receive", "address", NULL);
     if (error < 0) {
@@ -963,7 +963,7 @@ int32_t show_addresses(void) {
     error = query_count("wallet", "change", "address", NULL);
     if (error < 0) {
 	fprintf(stderr, "Problem querying database\n");
-	return error;
+	goto allocerr2;
     }
     count_change = error;
 
@@ -1002,3 +1002,266 @@ int32_t show_addresses(void) {
     
     return error;    
 }
+
+int32_t show_keys(void) {
+    gcry_error_t err = GPG_ERR_NO_ERROR;
+    int32_t error = 0;
+    key_pair_t *child_keys = NULL;
+    key_pair_t *root_keys = NULL;
+    key_pair_t *address_receive = NULL;
+    key_pair_t *address_change = NULL;
+    char *WIF_receive = NULL;
+    char *WIF_change = NULL; 
+    char *passwd = NULL;
+    query_return_t *query_receive = NULL;
+    query_return_t *query_change = NULL;
+    query_return_t *query_root = NULL;
+    uint32_t count_receive = 0;
+    uint32_t count_change = 0;
+    char bitcoin_address[64] = {0};
+    uint8_t verifier[64] = {0};
+    uint8_t pass_marker = 1;
+    uint32_t s_in_length = 0;
+    
+    err =libgcrypt_initializer();
+    if (!err) {
+	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
+	error = -1;
+	return error;
+    }
+
+    child_keys = (key_pair_t *)gcry_calloc_secure(5, sizeof(key_pair_t));
+    if (child_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    passwd = (char *)gcry_calloc_secure(70, sizeof(char));
+    if (passwd == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }    
+    query_root = (query_return_t *)gcry_calloc_secure(1, sizeof(query_return_t));
+    if (query_root == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr3;
+    }
+    root_keys = (key_pair_t *)gcry_calloc_secure(1, sizeof(key_pair_t));
+    if (root_keys == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr4;
+    }
+
+    error = read_key(query_root, "wallet", "root", "keys", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr5;
+    }
+    
+    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
+    if (!((sizeof(key_pair_t))%16)) {
+	s_in_length = sizeof(key_pair_t)+16;
+    }
+    else {
+	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
+    }
+    s_in_length += 16;
+    memset(verifier, 0x11, 64);
+
+    fprintf(stdout, "We are going to show your private keys, maybe is a good idea if you disconnect from the Internet now?\n");
+    fprintf(stdout, "Please type your password:\n");
+    while(pass_marker) {
+	error = getpasswd(passwd, password);
+	if (error) {
+	    fprintf(stderr, "Problem getting password from user\n");
+	    error = 0;
+	}	
+	err = decrypt_AES256((uint8_t *)root_keys, query_root->value, s_in_length, passwd);
+	if (err) {
+	    fprintf(stderr, "Problem decrypting message\n");
+	    err = GPG_ERR_NO_ERROR;
+	}
+	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
+	    fprintf(stdout, "Incorrect password, please try again:\n");
+	    memset(passwd, 0, 70);
+	}
+	else {
+	    pass_marker = 0;
+	}
+    }
+    
+    // Deriving keys
+    // Purpose: BIP84
+    err = key_deriv(&child_keys[0], root_keys->key_priv, root_keys->chain_code, BIP84, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving purpose keys\n");
+	goto allocerr5;
+    }
+    // Coin: Bitcoin
+    err = key_deriv(&child_keys[1], (uint8_t *)(&child_keys[0].key_priv), (uint8_t *)(&child_keys[0].chain_code), COIN_BITCOIN, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving coin keys\n");
+	goto allocerr5;
+    }	
+    // Account keys
+    err = key_deriv(&child_keys[2], (uint8_t *)(&child_keys[1].key_priv), (uint8_t *)(&child_keys[1].chain_code), ACCOUNT, hardened_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving account keys\n");
+	goto allocerr5;
+    }
+    // Receive keys index = 0
+    err = key_deriv(&child_keys[3], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 0, normal_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving receive keys\n");
+	goto allocerr5;
+    }
+     // Change keys index = 1
+    err = key_deriv(&child_keys[4], (uint8_t *)(&child_keys[2].key_priv), (uint8_t *)(&child_keys[2].chain_code), 1, normal_child);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem deriving change keys\n");
+	goto allocerr5;
+    }
+
+    // receive addresses
+    error = query_count("wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	goto allocerr5;
+    }
+    count_receive = error;
+    
+    query_receive = (query_return_t *)calloc(count_receive, sizeof(query_return_t));
+    if (query_receive == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr5;
+    }
+    
+    error = read_key(query_receive, "wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr6;
+    }
+
+    address_receive = (key_pair_t *)gcry_calloc_secure(count_receive, sizeof(key_pair_t));
+    if (address_receive == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr6;
+    }
+    WIF_receive = (char *)gcry_calloc_secure(1, 53*sizeof(char));
+    if (WIF_receive == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr7;
+    }
+
+    error = query_count("wallet", "change", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	goto allocerr8;
+    }
+    count_change = error;
+
+    query_change = (query_return_t *)calloc(count_change, sizeof(query_return_t));
+    if (query_change == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr8;
+    }
+    
+    error = read_key(query_change, "wallet", "change", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr9;
+    }
+
+    address_change = (key_pair_t *)gcry_calloc_secure(count_change, sizeof(key_pair_t));
+    if (address_change == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr9;
+    }
+    WIF_change = (char *)gcry_calloc_secure(1, 53*sizeof(char));
+    if (WIF_change == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr10;
+    }
+
+    fprintf(stdout, "\t\t\t\tReceive keys&addresses\n");
+    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\taddresses\n");
+    for (uint32_t i = 0; i < count_receive; i++) {
+	err = key_deriv(&address_receive[i], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), i, normal_child);
+	if (err) {
+	    error = -1;
+	    fprintf(stderr, "Problem deriving receive keys\n");
+	    goto allocerr11;
+	}
+	err = WIF_encode(WIF_receive, 52, (uint8_t *)(&address_receive[i].key_priv), mainnet);
+	if (err) {
+	    fprintf(stderr, "Problem encoding private key into WIF format\n");
+	    error = -1;
+	    goto allocerr11;
+	}
+	memcpy(bitcoin_address, &query_receive[i].value, 64*sizeof(char));	
+	fprintf(stdout,"%u | %s | %s\n", query_receive[i].id, WIF_receive, bitcoin_address);	
+	memset(bitcoin_address, 0, 64*sizeof(char));
+	memset(WIF_receive, 0, 52*sizeof(char));
+    }
+    fprintf(stdout, "\n");
+    fprintf(stdout, "\t\t\t\tChange addresses\n");
+    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\taddresses\n");
+    for (uint32_t i = 0; i < count_change; i++) {
+	err = key_deriv(&address_change[i], (uint8_t *)(&child_keys[4].key_priv), (uint8_t *)(&child_keys[4].chain_code), i, normal_child);
+	if (err) {
+	    error = -1;
+	    fprintf(stderr, "Problem deriving change keys\n");
+	    goto allocerr11;
+	}
+	err = WIF_encode(WIF_change, 52, (uint8_t *)(&address_change[i].key_priv), mainnet);
+	if (err) {
+	    fprintf(stderr, "Problem encoding private key into WIF format\n");
+	    error = -1;
+	    goto allocerr11;
+	}
+	memcpy(bitcoin_address, &query_change[i].value, 64*sizeof(char));
+	fprintf(stdout, "%u | %s | %s\n", query_change[i].id, WIF_change, bitcoin_address);
+	memset(bitcoin_address, 0, 64*sizeof(char));
+	memset(WIF_change, 0, 52*sizeof(char));
+    }
+
+ allocerr11:
+    gcry_free(WIF_change);
+ allocerr10:
+    gcry_free(address_change);
+ allocerr9:
+    free(query_change);
+ allocerr8:
+    gcry_free(WIF_receive);
+ allocerr7:
+    gcry_free(address_receive);
+ allocerr6:    
+    free(query_receive);
+ allocerr5:
+    gcry_free(root_keys);
+ allocerr4:    
+    gcry_free(query_root);
+ allocerr3:    
+    gcry_free(passwd);
+ allocerr2:    
+    gcry_free(child_keys);
+ allocerr1:
+    gcry_control(GCRYCTL_TERM_SECMEM);
+    
+    return error;    
+}
+
