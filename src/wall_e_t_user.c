@@ -1151,19 +1151,20 @@ int32_t show_keys(void) {
 	goto allocerr6;
     }
 
-    address_receive = (key_pair_t *)gcry_calloc_secure(count_receive, sizeof(key_pair_t));
-    if (address_receive == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr6;
+    if (count_receive) {
+	address_receive = (key_pair_t *)gcry_calloc_secure(count_receive, sizeof(key_pair_t));
+	if (address_receive == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr6;
+	}
+	WIF_receive = (char *)gcry_calloc_secure(1, 53*sizeof(char));
+	if (WIF_receive == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr7;
+	}
     }
-    WIF_receive = (char *)gcry_calloc_secure(1, 53*sizeof(char));
-    if (WIF_receive == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr7;
-    }
-
     error = query_count("wallet", "change", "address", NULL);
     if (error < 0) {
 	fprintf(stderr, "Problem querying database\n");
@@ -1184,21 +1185,23 @@ int32_t show_keys(void) {
 	goto allocerr9;
     }
 
-    address_change = (key_pair_t *)gcry_calloc_secure(count_change, sizeof(key_pair_t));
-    if (address_change == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr9;
+    if (count_change) {
+	address_change = (key_pair_t *)gcry_calloc_secure(count_change, sizeof(key_pair_t));
+	if (address_change == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr9;
+	}
+	WIF_change = (char *)gcry_calloc_secure(1, 53*sizeof(char));
+	if (WIF_change == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr10;
+	}
     }
-    WIF_change = (char *)gcry_calloc_secure(1, 53*sizeof(char));
-    if (WIF_change == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr10;
-    }
-
-    fprintf(stdout, "\t\t\t\tReceive keys&addresses\n");
-    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\taddresses\n");
+	
+    fprintf(stdout, "\t\t\t\t\tReceive Keys & Addresses\n");
+    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\t\tAddresses\n");
     for (uint32_t i = 0; i < count_receive; i++) {
 	err = key_deriv(&address_receive[i], (uint8_t *)(&child_keys[3].key_priv), (uint8_t *)(&child_keys[3].chain_code), i, normal_child);
 	if (err) {
@@ -1218,8 +1221,8 @@ int32_t show_keys(void) {
 	memset(WIF_receive, 0, 52*sizeof(char));
     }
     fprintf(stdout, "\n");
-    fprintf(stdout, "\t\t\t\tChange addresses\n");
-    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\taddresses\n");
+    fprintf(stdout, "\t\t\t\t\tChange Keys & Addresses\n");
+    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\t\tAddresses\n");
     for (uint32_t i = 0; i < count_change; i++) {
 	err = key_deriv(&address_change[i], (uint8_t *)(&child_keys[4].key_priv), (uint8_t *)(&child_keys[4].chain_code), i, normal_child);
 	if (err) {
