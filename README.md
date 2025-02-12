@@ -9,7 +9,7 @@ This software implements the following standards or BIPs (Bitcoin Improvement Pr
  - [BIP173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki) Base32 address format for native v0-16 witness outputs
  
 ## Acknowledgments
-This software package is built upon the shoulders of the [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html) and [SQLite](https://www.sqlite.org/copyright.html) libraries, all honour and glory to those developers.
+This software package is built upon the shoulders of the [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html), [SQLite](https://www.sqlite.org/copyright.html) and [libcurl](https://curl.se/docs/copyright.html) libraries, all honour and glory to those developers.
 Also code snippets from the reference implementation of [BIP173](https://github.com/sipa/bech32/tree/master/ref) have been used to calculate bech32 type of address checksums.
 
 ## Dependencies

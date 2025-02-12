@@ -1,4 +1,5 @@
-/* Bitcoin wallet on the command line based on the libgcrypt & SQLite libraries
+/* Bitcoin wallet on the command line based on the libgcrypt, SQLite
+ * and libcurl libraries   
  *
  * Copyright 2025 Rubberazer
  *
@@ -14,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Code on this file is an adaption of the original one from the BIP173 Reference Implementations
+ * Code on this file is an adaptation of the original one from the BIP173 Reference Implementations
  * at: https://github.com/sipa/bech32/tree/master/ref/c%2B%2B
  * And with its own license:
  *
