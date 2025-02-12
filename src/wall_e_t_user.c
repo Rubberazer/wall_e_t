@@ -27,7 +27,7 @@ void print_usage(void) {
 	    "    -create                  Creates a new Bitcoin wallet\n"
 	    "    -show key                Shows wallet Root Private key\n"
 	    "    -show addresses          Shows all bitcoin addresses in wallet\n"
-	    "    -show keys addresses     Shows all bitcoin addresses and their corresponding private keys for each address in wallet\n"
+	    "    -show keys               Shows all bitcoin addresses and their corresponding private keys for each address in wallet\n"
 	    "    -recover                 Recovers a wallet by using the list of mnemonic words and passphrase\n"
 	    "    -receive                 Receive bitcoin, a new bitcoin address will be created\n"
 	    "    -help                    Shows this\n");

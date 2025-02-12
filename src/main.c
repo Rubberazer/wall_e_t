@@ -52,15 +52,20 @@ int main(int argc, char **argv) {
 	    opt_mask = 0x04;
 	    break;
 	case 's':
-	    for (uint32_t i = optind-1; i < argc; i++) {
-		if (!strcmp(argv[i], "key")) {
-		    opt_mask = 0x08;
-		    break;
-		}
-		if (!strcmp(argv[i], "addresses")) {
-		    opt_mask = 0x10;
-		    break;
-		}
+	    if (!strcmp(argv[optind-1], "key")) {
+		opt_mask = 0x08;
+		break;
+	    }
+	    else if (!strcmp(argv[optind-1], "addresses")) {
+		opt_mask = 0x10;
+		break;
+	    }
+	    else if (!strcmp(argv[optind-1], "keys")) {
+		opt_mask = 0x11;
+		break;
+	    }
+	    else {
+		fprintf(stdout, "Wrong argument for -show\n");
 	    }
 	    break;
 	case 'h': print_usage();
