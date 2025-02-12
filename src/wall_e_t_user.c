@@ -1137,21 +1137,21 @@ int32_t show_keys(void) {
 	goto allocerr5;
     }
     count_receive = error;
-    
-    query_receive = (query_return_t *)calloc(count_receive, sizeof(query_return_t));
-    if (query_receive == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr5;
-    }
-    
-    error = read_key(query_receive, "wallet", "receive", "address", NULL);
-    if (error < 0) {
-	fprintf(stderr, "Problem querying database, exiting\n");
-	goto allocerr6;
-    }
 
     if (count_receive) {
+	query_receive = (query_return_t *)calloc(count_receive, sizeof(query_return_t));
+	if (query_receive == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr5;
+	}
+    
+	error = read_key(query_receive, "wallet", "receive", "address", NULL);
+	if (error < 0) {
+	    fprintf(stderr, "Problem querying database, exiting\n");
+	    goto allocerr6;
+	}
+
 	address_receive = (key_pair_t *)gcry_calloc_secure(count_receive, sizeof(key_pair_t));
 	if (address_receive == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
@@ -1173,20 +1173,20 @@ int32_t show_keys(void) {
     }
     count_change = error;
 
-    query_change = (query_return_t *)calloc(count_change, sizeof(query_return_t));
-    if (query_change == NULL) {
-	fprintf (stderr, "Problem allocating memory\n");
-	error = -1;
-	goto allocerr8;
-    }
-    
-    error = read_key(query_change, "wallet", "change", "address", NULL);
-    if (error < 0) {
-	fprintf(stderr, "Problem querying database, exiting\n");
-	goto allocerr9;
-    }
-
     if (count_change) {
+	query_change = (query_return_t *)calloc(count_change, sizeof(query_return_t));
+	if (query_change == NULL) {
+	    fprintf (stderr, "Problem allocating memory\n");
+	    error = -1;
+	    goto allocerr8;
+	}
+    
+	error = read_key(query_change, "wallet", "change", "address", NULL);
+	if (error < 0) {
+	    fprintf(stderr, "Problem querying database, exiting\n");
+	    goto allocerr9;
+	}
+
 	address_change = (key_pair_t *)gcry_calloc_secure(count_change, sizeof(key_pair_t));
 	if (address_change == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
@@ -1244,25 +1244,23 @@ int32_t show_keys(void) {
     }
 
  allocerr11:
-    if (count_change) {
+    if (count_change)
 	gcry_free(WIF_change);
-    }
  allocerr10:
-    if (count_change) {
+    if (count_change)
 	gcry_free(address_change);
-    }
  allocerr9:
-    free(query_change);
+    if (count_change)
+	free(query_change);
  allocerr8:
-    if (count_receive) {
+    if (count_receive)
 	gcry_free(WIF_receive);
-    }
  allocerr7:
-    if (count_receive) {
+    if (count_receive)
 	gcry_free(address_receive);
-    }
- allocerr6:    
-    free(query_receive);
+ allocerr6:
+    if (count_receive)
+	free(query_receive);
  allocerr5:
     gcry_free(root_keys);
  allocerr4:    
