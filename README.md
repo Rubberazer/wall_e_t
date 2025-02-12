@@ -56,7 +56,7 @@ This will show your Private Root key on screen
 
 	./wall_e_t -show key
 
-### Show Addresses (not ready yet)
+### Show Addresses
 This will show all your bitcoin addresses on screen
 
     ./wall_e_t -show addresses
