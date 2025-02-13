@@ -11,7 +11,7 @@ This software implements the following standards or BIPs (Bitcoin Improvement Pr
 ## Acknowledgments
 This software package is built upon the shoulders of the [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html), [SQLite](https://www.sqlite.org/copyright.html) and [libcurl](https://curl.se/docs/copyright.html) libraries, all honour and glory to those developers.
 Also code snippets from the reference implementation of [BIP173](https://github.com/sipa/bech32/tree/master/ref) have been used to calculate bech32 type of address checksums.
-Balances are coming through a web API, more specifically, this one: https://bitcoinexplorer.org/
+Balances are coming through a web API, more specifically, this one: https://blockchain.info
 
 ## Dependencies
 In order to compile, you will need to install libgcrypt, SQLite and libcurl first e.g. on a Debian based system this should be as simple as:

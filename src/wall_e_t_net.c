@@ -44,7 +44,7 @@ static size_t cb(char *data, size_t size, size_t nmemb, void *clientp) {
 
 ssize_t address_balance(char * bitcoin_address) {
     ssize_t error = 0;
-    char url_api[300] = "https://bitcoinexplorer.org/api/address/";
+    char url_api[300] = "https://blockchain.info/balance?active=";
     CURL *curl;
     CURLcode res;
     struct memory chunk = {0};
@@ -75,8 +75,8 @@ ssize_t address_balance(char * bitcoin_address) {
     char *pos = NULL;
     uint32_t position = 0;
     
-    pos = strstr(chunk.response, "\"balanceSat\":");
-    pos += 13;
+    pos = strstr(chunk.response, "\"final_balance\":");
+    pos += 16;
     strcpy(swap_string, pos);
     position = strcspn(swap_string, ",");
     memset(chunk.response, 0, chunk.size);
