@@ -55,6 +55,7 @@ ssize_t address_balance(char * bitcoin_address) {
     if(!curl) {
 	fprintf(stderr, "Request for balance via web failed\n");
 	error = -1;
+	return error;
     }
     
     curl_easy_setopt(curl, CURLOPT_URL, url_api);
@@ -69,6 +70,7 @@ ssize_t address_balance(char * bitcoin_address) {
     if(res != CURLE_OK) {
 	fprintf(stderr, "Request for balance via web failed\n");
 	error = -1;
+	return error;
     }
 
     char swap_string[chunk.size];
