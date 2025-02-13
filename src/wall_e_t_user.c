@@ -69,7 +69,7 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
     case password:
 	strcpy(pass, "password");
 	pass_max = PASSWD_MAX-1;
-	pass_min = PASSWD_MIN-1;
+	pass_min = PASSWD_MIN;
 	break;
     case passphrase:
 	strcpy(pass, "passphrase");
