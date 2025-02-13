@@ -16,5 +16,8 @@ test_sql:
 test_user:
 	$(MAKE) -C src test_user
 
+test_net:
+	$(MAKE) -C src test_net
+
 clean:
 	$(MAKE) -C src clean

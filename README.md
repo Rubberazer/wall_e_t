@@ -11,11 +11,12 @@ This software implements the following standards or BIPs (Bitcoin Improvement Pr
 ## Acknowledgments
 This software package is built upon the shoulders of the [libgcrypt](https://www.gnupg.org/software/libgcrypt/index.html), [SQLite](https://www.sqlite.org/copyright.html) and [libcurl](https://curl.se/docs/copyright.html) libraries, all honour and glory to those developers.
 Also code snippets from the reference implementation of [BIP173](https://github.com/sipa/bech32/tree/master/ref) have been used to calculate bech32 type of address checksums.
+Balances are coming through a web API, more specifically, this one: https://bitcoinexplorer.org/
 
 ## Dependencies
-In order to compile, you will need to install libgcrypt and SQLite first e.g. on a Debian based system this should be as simple as:
+In order to compile, you will need to install libgcrypt, SQLite and libcurl first e.g. on a Debian based system this should be as simple as:
 
-    sudo apt install libgcrypt20-dev && sudo apt install libsqlite3-dev	
+    sudo apt install libgcrypt20-dev && sudo apt install libsqlite3-dev	&& sudo apt-get install libcurl4-openssl-dev
 
 ## Test vectors
 Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way. Also, Greg's site is an absolute must, highly recommended: https://learnmeabitcoin.com/.
@@ -66,8 +67,8 @@ This will show all your bitcoin addresses with their respective private keys on 
 
     ./wall_e_t -show keys
 
-### Balance (not ready yet)
-This will show on screen the amount of satoshis per bitcoin address in your wallet
+### Balance
+This will show on screen the amount of satoshis per bitcoin address and the totals in your wallet
 
     ./wall_e_t -balance
 	

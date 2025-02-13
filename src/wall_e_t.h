@@ -18,6 +18,7 @@
 
 #include <gcrypt.h>
 #include <sqlite3.h>
+#include <curl/curl.h>
 #include <stdint.h>
 
 #ifndef wall_e_t_h__
@@ -310,4 +311,10 @@ int32_t show_addresses(void);
 /* Show all private keys i WIF format and addresses */
 int32_t show_keys(void);
 
+/* To get balances for each address */
+ssize_t address_balance(char * bitcoin_address);
+
+/* To get wallet balances in satoshis  */
+int32_t wallet_balances(void);
+    
 #endif  // wall_e_t_h__

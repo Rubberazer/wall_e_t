@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
     {"recover", 0, NULL, 'r'},
     {"receive", 0, NULL, 'R'},
     {"show",    1, NULL, 's'},
+    {"balance", 0, NULL, 'b'},
     {"help",    0, NULL, 'h'},
     {NULL, 0, NULL, 0}
     };
@@ -41,7 +42,7 @@ int main(int argc, char **argv) {
 	    print_usage();
 	    exit(err);
 	}
-	opts = getopt_long_only(argc, argv, "crhs:", options, NULL);
+	opts = getopt_long_only(argc, argv, "crRs:bh", options, NULL);
 	switch (opts) {
 	case 'c':
 	    opt_mask = 0x01;
@@ -68,6 +69,9 @@ int main(int argc, char **argv) {
 	    else {
 		fprintf(stdout, "Wrong argument for -show\n");
 	    }
+	    break;
+	case 'b':
+	    opt_mask = 0x12;
 	    break;
 	case 'h': print_usage();
 	    break;
@@ -111,6 +115,13 @@ int main(int argc, char **argv) {
     }    
     if (opt_mask == 0x11) {
 	err = show_keys();
+	if (err) {
+	    fprintf(stderr, "Problem showing keys&addresses, exiting\n");
+	}
+    }    
+    
+    if (opt_mask == 0x12) {
+	err = wallet_balances();
 	if (err) {
 	    fprintf(stderr, "Problem showing keys&addresses, exiting\n");
 	}

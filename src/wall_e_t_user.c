@@ -31,6 +31,7 @@ void print_usage(void) {
 	    "    -show keys               Shows all bitcoin addresses and their corresponding private keys for each address in wallet\n"
 	    "    -recover                 Recovers a wallet by using the list of mnemonic words and passphrase\n"
 	    "    -receive                 Receive bitcoin, a new bitcoin address will be created\n"
+	    "    -balance                 Balance for all addresses in wallet in Satoshis\n"
 	    "    -help                    Shows this\n");
 }
 
@@ -120,7 +121,7 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
 }
 
 int32_t create_wallet(void) {
-    typedef char *word_t[70];
+    typedef char *word_t[PASSWD_MAX];
     gcry_error_t err = GPG_ERR_NO_ERROR;
     int32_t error = 0;
     mnemonic_t *mnem = NULL;
@@ -320,7 +321,7 @@ int32_t create_wallet(void) {
 }
 
 int32_t recover_wallet(void) {
-    typedef char *word_t[70];
+    typedef char *word_t[PASSWD_MAX];
     gcry_error_t err = GPG_ERR_NO_ERROR;
     int32_t error = 0;
     mnemonic_t *mnem = NULL;
@@ -685,7 +686,7 @@ int32_t show_key(void) {
 	error = -1;
 	goto allocerr2;
     }
-    passwd = (char *)gcry_calloc_secure(70, sizeof(char));
+    passwd = (char *)gcry_calloc_secure(PASSWD_MAX, sizeof(char));
     if (passwd == NULL) {
 	fprintf (stderr, "Problem allocating memory\n");
 	error = -1;
@@ -729,7 +730,7 @@ int32_t show_key(void) {
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
 	    fprintf(stdout, "Incorrect password, please try again:\n");
-	    memset(passwd, 0, 70);
+	    memset(passwd, 0, PASSWD_MAX);
 	}
 	else {
 	    pass_marker = 0;
@@ -793,7 +794,7 @@ int32_t receive_coin(void) {
 	error = -1;
 	goto allocerr1;
     }
-    passwd = (char *)gcry_calloc_secure(70, sizeof(char));
+    passwd = (char *)gcry_calloc_secure(PASSWD_MAX, sizeof(char));
     if (passwd == NULL) {
 	fprintf (stderr, "Problem allocating memory\n");
 	error = -1;
@@ -848,7 +849,7 @@ int32_t receive_coin(void) {
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
 	    fprintf(stdout, "Incorrect password, please try again:\n");
-	    memset(passwd, 0, 70);
+	    memset(passwd, 0, PASSWD_MAX);
 	}
 	else {
 	    pass_marker = 0;
@@ -1046,7 +1047,7 @@ int32_t show_keys(void) {
 	    error = -1;
 	    goto allocerr1;
 	}
-	passwd = (char *)gcry_calloc_secure(70, sizeof(char));
+	passwd = (char *)gcry_calloc_secure(PASSWD_MAX, sizeof(char));
 	if (passwd == NULL) {
 	    fprintf (stderr, "Problem allocating memory\n");
 	    error = -1;
@@ -1106,7 +1107,7 @@ int32_t show_keys(void) {
 	    }
 	    if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
 		fprintf(stdout, "Incorrect password, please try again:\n");
-		memset(passwd, 0, 70);
+		memset(passwd, 0, PASSWD_MAX);
 	    }
 	    else {
 		pass_marker = 0;
@@ -1314,3 +1315,94 @@ int32_t show_keys(void) {
     return error;    
 }
 
+int32_t wallet_balances(void) {
+    int32_t error = 0;
+    query_return_t *query_receive = NULL;
+    query_return_t *query_change = NULL;
+    uint32_t count_receive = 0;
+    uint32_t count_change = 0;
+    char bitcoin_address[64] = {0};
+    ssize_t address_sats = 0;
+    ssize_t receive_balance = 0;
+    ssize_t change_balance = 0;
+    
+    error = query_count("wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	return error;
+    }
+    count_receive = error;
+
+    query_receive = (query_return_t *)calloc(count_receive, sizeof(query_return_t));
+    if (query_receive == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr1;
+    }
+    
+    error = read_key(query_receive, "wallet", "receive", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr2;
+    }
+
+    error = query_count("wallet", "change", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database\n");
+	goto allocerr2;
+    }
+    count_change = error;
+
+    query_change = (query_return_t *)calloc(count_change, sizeof(query_return_t));
+    if (query_change == NULL) {
+	fprintf (stderr, "Problem allocating memory\n");
+	error = -1;
+	goto allocerr2;
+    }
+    
+    error = read_key(query_change, "wallet", "change", "address", NULL);
+    if (error < 0) {
+	fprintf(stderr, "Problem querying database, exiting\n");
+	goto allocerr3;
+    }
+
+    fprintf(stdout, "\t\tReceive addresses\n");
+    fprintf(stdout, "\t\t\tAddress\t\t\t\tSatoshis\n");
+    for (uint32_t i = 0; i < count_receive; i++) {
+	memcpy(bitcoin_address, &query_receive[i].value, 64*sizeof(char));
+	address_sats = address_balance(bitcoin_address);
+	if (address_sats < 0) {
+	    fprintf(stderr, "Failed to get balance for address: %s", bitcoin_address);
+	    address_sats = 0;
+	}
+	fprintf(stdout,"%u | %s | %ld\n", query_receive[i].id, bitcoin_address, address_sats);
+	memset(bitcoin_address, 0, 64*sizeof(char));
+	receive_balance += address_sats; 
+	address_sats = 0;
+    }
+    fprintf(stdout, "\n");
+    fprintf(stdout, "\t\tChange addresses\n");
+    fprintf(stdout, "\t\t\tAddress\t\t\t\tSatoshis\n");
+    for (uint32_t i = 0; i < count_change; i++) {
+	memcpy(bitcoin_address, &query_change[i].value, 64*sizeof(char));
+	if (error < 0) {
+	    fprintf(stderr, "Failed to get balance for address: %s", bitcoin_address);
+	    address_sats = 0;
+	}
+	fprintf(stdout, "%u | %s | %ld\n", query_change[i].id, bitcoin_address, address_sats);
+	memset(bitcoin_address, 0, 64*sizeof(char));
+	change_balance += address_sats; 
+	address_sats = 0;
+    }
+
+    fprintf(stdout, "\nTOTAL RECEIVE BALANCE: %ld\n", receive_balance);
+    fprintf(stdout, "TOTAL CHANGE BALANCE: %ld\n", receive_balance);
+    
+ allocerr3:
+    free(query_change);
+ allocerr2:    
+    free(query_receive);
+ allocerr1:
+    
+    return error;    
+}
