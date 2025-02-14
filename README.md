@@ -35,7 +35,7 @@ This above will produce 5 executable files, if you run this one: ./test_BIP84 wh
 ## The Wallet
 You should compile with:
 	
-	make
+	make wallet
 	
 This will generate an executable: wall_e_t, options are:
 ### Create wallet
