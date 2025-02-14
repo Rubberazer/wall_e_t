@@ -393,7 +393,7 @@ int32_t recover_wallet(void) {
     fgets(recover_mnem, 1000, stdin);
     uint32_t pos = strcspn(recover_mnem, "\n");
     recover_mnem[pos] = 0;
-
+    
     fprintf(stdout, "Along with your mnemonic phrase, an additional passphrase si required, if you didnt have one, you can just leave it empty and press ENTER\n");    
     while(pass_ctrl) {
 	error = getpasswd((char *)(&s_salt[0]), passphrase);
