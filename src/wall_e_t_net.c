@@ -76,9 +76,10 @@ ssize_t address_balance(char * bitcoin_address) {
     char swap_string[chunk.size];
     char *pos = NULL;
     uint32_t position = 0;
+    const char *token = "\"final_balance\":";
     
-    pos = strstr(chunk.response, "\"final_balance\":");
-    pos += 16;
+    pos = strstr(chunk.response, token);
+    pos += strlen(token);
     strcpy(swap_string, pos);
     position = strcspn(swap_string, ",");
     memset(chunk.response, 0, chunk.size);

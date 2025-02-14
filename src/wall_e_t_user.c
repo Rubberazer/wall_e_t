@@ -31,7 +31,7 @@ void print_usage(void) {
 	    "    -show keys               Shows all bitcoin addresses and their corresponding private keys for each address in wallet\n"
 	    "    -recover                 Recovers a wallet by using the list of mnemonic words and passphrase\n"
 	    "    -receive                 Receive bitcoin, a new bitcoin address will be created\n"
-	    "    -balance                 Balance for all addresses in wallet in Satoshis\n"
+	    "    -balance                 Balance for all addresses in wallet in satoshis\n"
 	    "    -help                    Shows this\n");
 }
 

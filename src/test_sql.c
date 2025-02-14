@@ -107,6 +107,7 @@ int main(int arg, char *arv[]) {
 
     char *bitcoin_address = "bc1q0cgzunwtnydaklsrrv8gc6frdm9tq2fdprydl6";
     insert_address.id = 0;
+    insert_address.value_size = strlen(bitcoin_address)*sizeof(char); 
     memcpy(insert_address.value, bitcoin_address, strlen(bitcoin_address));
     
     err = insert_key(&insert_address, 1, "wallet", "receive", "address");

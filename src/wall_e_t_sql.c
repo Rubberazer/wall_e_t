@@ -57,7 +57,6 @@ int32_t create_wallet_db(char *db_name) {
 		fprintf(stdout, "Nothing changed\n");
 		return 0;
 	    }  
-	    err = sqlite3_close_v2(pdb);
 	    err = remove(path);
 	    if (err) {
 		fprintf(stderr, "Error: Unable to delete the file.\n");
