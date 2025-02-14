@@ -416,6 +416,14 @@ int32_t recover_wallet(void) {
     fprintf(stdout, "Passphrase registered successfully\n\n");
     pass_ctrl = 1;
 
+    // Obtain mnemonic + root keys
+    err = recover_from_mnemonic(recover_mnem, (char *)(&s_salt[1]), mnem);
+    if (err) {
+	error = -1;
+	fprintf(stderr, "Problem recovering from mnemonic\n");
+	goto allocerr7;
+    }
+
     fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Root Keys into your wallet\n");
     while(pass_ctrl) {
 	error = getpasswd((char *)(&passwd[0]), password);
@@ -437,13 +445,6 @@ int32_t recover_wallet(void) {
     }
     fprintf(stdout, "Password registered successfully\n\n\n");
 
-    // Obtain mnemonic + root keys
-    err = recover_from_mnemonic(recover_mnem, (char *)(&s_salt[1]), mnem);
-    if (err) {
-	error = -1;
-	fprintf(stderr, "Problem recovering from mnemonic\n");
-	goto allocerr7;
-    }
     // Deriving keys
     // Purpose: BIP84
     err = key_deriv(&child_keys[0], mnem->keys.key_priv, mnem->keys.chain_code, BIP84, hardened_child);
