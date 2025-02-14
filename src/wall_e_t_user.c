@@ -983,6 +983,7 @@ int32_t show_addresses(void) {
     }
 
     fprintf(stdout, "\t\tReceive addresses\n");
+    fprintf(stdout, "Id \t\tAddresses\n");
     for (uint32_t i = 0; i < count_receive; i++) {
 	memcpy(bitcoin_address, &query_receive[i].value, 64*sizeof(char));
 	fprintf(stdout,"%u | %s\n", query_receive[i].id, bitcoin_address);
@@ -990,6 +991,7 @@ int32_t show_addresses(void) {
     }
     fprintf(stdout, "\n");
     fprintf(stdout, "\t\tChange addresses\n");
+    fprintf(stdout, "Id \t\tAddresses\n");
     for (uint32_t i = 0; i < count_change; i++) {
 	memcpy(bitcoin_address, &query_change[i].value, 64*sizeof(char));
 	fprintf(stdout, "%u | %s\n", query_change[i].id, bitcoin_address);
@@ -1173,7 +1175,7 @@ int32_t show_keys(void) {
     }
     
     fprintf(stdout, "\t\t\t\t\tReceive Keys & Addresses\n");
-    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\t\tAddresses\n");
+    fprintf(stdout, "Id \t\tWIF keys\t\t\t\t\t\tAddresses\n");
     if (count_receive) {
 	query_return_t *query_receive = NULL;
 	key_pair_t *address_receive = NULL;
@@ -1240,7 +1242,7 @@ int32_t show_keys(void) {
 
     fprintf(stdout, "\n");
     fprintf(stdout, "\t\t\t\t\tChange Keys & Addresses\n");
-    fprintf(stdout, "\t\t\tWIF keys\t\t\t\t\t\tAddresses\n");    
+    fprintf(stdout, "Id \t\tWIF keys\t\t\t\t\t\tAddresses\n");    
     if (count_change) {
 	query_return_t *query_change = NULL;
 	key_pair_t *address_change = NULL;
@@ -1366,8 +1368,8 @@ int32_t wallet_balances(void) {
 	goto allocerr3;
     }
 
-    fprintf(stdout, "\t\tReceive addresses\n");
-    fprintf(stdout, "\t\t\tAddress\t\t\t\tSatoshis\n");
+    fprintf(stdout, "\t\t\tReceive addresses\n");
+    fprintf(stdout, "\t\tAddress\t\t\t\tSatoshis\n");
     for (uint32_t i = 0; i < count_receive; i++) {
 	memcpy(bitcoin_address, &query_receive[i].value, 64*sizeof(char));
 	address_sats = address_balance(bitcoin_address);
@@ -1381,8 +1383,8 @@ int32_t wallet_balances(void) {
 	address_sats = 0;
     }
     fprintf(stdout, "\n");
-    fprintf(stdout, "\t\tChange addresses\n");
-    fprintf(stdout, "\t\t\tAddress\t\t\t\tSatoshis\n");
+    fprintf(stdout, "\t\t\tChange addresses\n");
+    fprintf(stdout, "\t\tAddress\t\t\t\tSatoshis\n");
     for (uint32_t i = 0; i < count_change; i++) {
 	memcpy(bitcoin_address, &query_change[i].value, 64*sizeof(char));
 	if (error < 0) {

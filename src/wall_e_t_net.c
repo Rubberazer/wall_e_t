@@ -62,7 +62,7 @@ ssize_t address_balance(char * bitcoin_address) {
 
     //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-    curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
+    //curl_easy_setopt(curl, CURLOPT_CA_CACHE_TIMEOUT, 604800L);
     
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
