@@ -1,6 +1,6 @@
 /* Bitcoin wallet on the command line based on the libgcrypt, SQLite
- * and libcurl libraries   
- *
+ * and libcurl libraries, made in its entirety by human hands   
+ * 
  * Copyright 2025 Rubberazer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
