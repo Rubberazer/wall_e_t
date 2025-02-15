@@ -373,7 +373,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
     gcry_buffer_t *key_buff = NULL; 	
     
     if (salt == NULL || strlen(salt) > PASSP_MAX-1) {
-	fprintf (stderr, "Salt is limited to %d characters in english, no emoticons\n",PASSP_MAX);
+	fprintf (stderr, "Salt is limited to %d characters in english, no emoticons\n",PASSP_MAX-1);
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
@@ -532,7 +532,7 @@ gcry_error_t recover_from_mnemonic(char *mnemonic, char *salt, mnemonic_t *mnem)
 	return err;
     }
     if (salt == NULL || strlen(salt) > PASSP_MAX-1) {
-	fprintf (stderr, "salt is limited to %d characters in english, no emoticons\n", PASSP_MAX);
+	fprintf (stderr, "salt is limited to %d characters in english, no emoticons\n", PASSP_MAX-1);
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
