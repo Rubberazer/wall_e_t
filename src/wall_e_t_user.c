@@ -134,7 +134,7 @@ int32_t create_wallet(void) {
     uint8_t pass_ctrl = 1;
     query_return_t *query_insert = NULL;
 
-    err =libgcrypt_initializer();
+    err = libgcrypt_initializer();
     if (!err) {
 	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
 	error = -1;
@@ -336,7 +336,7 @@ int32_t recover_wallet(void) {
     uint8_t addresses_menu = 1;
     char bech32_address[64] = {0};
     
-    err =libgcrypt_initializer();
+    err = libgcrypt_initializer();
     if (!err) {
 	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
 	error = -1;
@@ -668,7 +668,7 @@ int32_t show_key(void) {
     uint8_t verifier[64] = {0};
     uint8_t pass_marker = 1;
     
-    err =libgcrypt_initializer();
+    err = libgcrypt_initializer();
     if (!err) {
 	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
 	error = -1;
@@ -782,7 +782,7 @@ int32_t receive_coin(void) {
     uint8_t pass_marker = 1;
     uint32_t s_in_length = 0;
 	
-    err =libgcrypt_initializer();
+    err = libgcrypt_initializer();
     if (!err) {
 	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
 	error = -1;
@@ -1022,7 +1022,7 @@ int32_t show_keys(void) {
     char *passwd = NULL;    
     query_return_t *query_root = NULL;
 
-    err =libgcrypt_initializer();
+    err = libgcrypt_initializer();
     if (!err) {
 	fprintf (stderr, "Not possible to initialize libgcrypt library\n");
 	error = -1;
