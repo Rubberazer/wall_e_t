@@ -161,7 +161,7 @@ int main(void) {
 	printf("%02x", (uint8_t)decrypted_s[i]);
     }
 
-    const char *sign_data = "aaaa";
+    const char *sign_data = "aaaaxxxxsasasa";
     uint8_t data_hash[32] = {0};
     
     gcry_md_hash_buffer(GCRY_MD_SHA256, data_hash, sign_data, strlen(sign_data));
@@ -189,6 +189,7 @@ int main(void) {
 	printf("%02x", signature->DER_u[i]);
     }
     printf("\nPrinting DER encoded signature in string format: \n%s \n",signature->DER);
+    printf("Signature length: %u \n",signature->DER_len);
     
     char mnemonic_test[1000];
     printf("\nOriginal mnemonic: %s\n", mnem->mnemonic);

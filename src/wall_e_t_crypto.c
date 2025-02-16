@@ -1323,7 +1323,9 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length
     gcry_sexp_t s_data = NULL;
     gcry_sexp_t s_sign = NULL;	
     uint8_t *data_hash = NULL;
-        
+    gcry_ctx_t s_key_ctx = NULL;
+    gcry_sexp_t s_key_pub = NULL;
+    
     if (sign == NULL || data_in == NULL || priv_key == NULL) {
 	fprintf(stderr, "sign, data_in and priv_key can't NULL\n");
 	err = gcry_error_from_errno(EINVAL);
@@ -1394,7 +1396,24 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length
 	fprintf(stderr, "Failed to sign data\n");
 	goto allocerr8;
     }
-        
+
+    // Verify signature
+    err = gcry_mpi_ec_new(&s_key_ctx, s_key, NULL);
+    if (err) {
+	fprintf(stderr, "Failed to create context type for master key\n");
+	goto allocerr8;
+    }
+    err = gcry_pubkey_get_sexp(&s_key_pub, GCRY_PK_GET_PUBKEY, s_key_ctx);
+    if (err) {
+	fprintf(stderr, "Failed to extract public key from context\n");
+	goto allocerr9;
+    }
+    err = gcry_pk_verify(s_sign, s_data, s_key_pub);
+    if (err) {
+	fprintf(stderr, "Signature verification failed\n");
+	goto allocerr10;
+    }
+    
     memset(s_key_swap, 0, BUFF_SIZE);
     char * P = s_key_swap;
     s_data = gcry_sexp_find_token(s_sign, "r", 0);
@@ -1448,11 +1467,16 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length
 	}
 	DER_len = 70;
     }
+    sign->DER_len = DER_len;
     err = uint8_to_char(sign->DER_u, sign->DER, DER_len);
     if (err) {
 	fprintf(stderr, "Failed to convert signature s into a string format\n");
     }	
-    
+
+ allocerr10:
+     gcry_sexp_release(s_key_pub);
+ allocerr9:
+    gcry_ctx_release(s_key_ctx);    
  allocerr8:
     gcry_sexp_release(s_data);
  allocerr7:

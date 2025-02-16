@@ -175,6 +175,7 @@ typedef struct {
 } key_address_t;
 
 typedef struct {
+    uint8_t DER_len;
     uint8_t r[32];
     uint8_t s[32];
     uint8_t DER_u[71];
