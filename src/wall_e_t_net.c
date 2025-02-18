@@ -93,7 +93,7 @@ ssize_t address_balance(char * bitcoin_address) {
     return error;
 }
 
-ssize_t addres_utxo_n(char * bitcoin_address) {
+ssize_t address_utxo_n(char * bitcoin_address) {
     ssize_t error = 0;
     char url_api[1000] = "https://blockchain.info/unspent?active=";
     CURL *curl;
@@ -137,7 +137,7 @@ ssize_t addres_utxo_n(char * bitcoin_address) {
     return error;
 }
 
-ssize_t addres_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_address) {
+ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_address) {
     ssize_t error = 0;
     char url_api[1000] = "https://blockchain.info/unspent?active=";
     CURL *curl;

@@ -322,10 +322,10 @@ int32_t show_keys(void);
 ssize_t address_balance(char * bitcoin_address);
 
 /* To get number of utxos for each address */
-ssize_t addres_utxo_n(char * bitcoin_address);
+ssize_t address_utxo_n(char * bitcoin_address);
     
 /* To get utxo for each address */
-ssize_t addres_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_address);
+ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_address);
 
 /* To get wallet balances in satoshis  */
 int32_t wallet_balances(void);

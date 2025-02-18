@@ -31,7 +31,7 @@ int main() {
     printf("Satoshis: %ld\n", error);
 
 
-    error = addres_utxo_n("bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv"); 
+    error = address_utxo_n("bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv"); 
     if (error < 0) {
 	fprintf(stderr, "Problem getting number of utxos for address\n");
 	exit(error);
@@ -41,7 +41,7 @@ int main() {
     error = 0;
     utxo_t unspent[count_utxos];
     
-    error = addres_utxo(unspent, count_utxos, "bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv");
+    error = address_utxo(unspent, count_utxos, "bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv");
     if (error < 0) {
 	fprintf(stderr, "Problem getting utxos for address\n");
 	exit(error);
