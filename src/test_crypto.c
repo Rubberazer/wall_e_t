@@ -218,7 +218,14 @@ int main(void) {
     }
 
     //printf("\nSize of gcry_sexp_t: %lu\n", sizeof(gcry_sexp_t));
-    
+
+    char *test_decode58 = "1qwvrzibMbbczFnrcVWLMWeU6r6buJbdo";
+    uint8_t test_decode58_uint8[33];
+    err = base58_decode(test_decode58_uint8, test_decode58, strlen(test_decode58));
+    if (err) {
+	printf("Problem decoding base58 address, error code:%s & error source:%s", gcry_strerror(err), gcry_strsource(err));
+    }
+
     gcry_free(signature);
     gcry_free(bech32_address);
     gcry_free(key_address);

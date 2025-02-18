@@ -188,6 +188,11 @@ typedef struct {
     uint8_t value[1000];
 } query_return_t;
 
+typedef struct {
+    uint32_t vout;
+    uint8_t txid[32];
+} utxo_t;
+
 typedef enum {
     normal_child,
     hardened_child
@@ -316,7 +321,16 @@ int32_t show_keys(void);
 /* To get balances for each address */
 ssize_t address_balance(char * bitcoin_address);
 
+/* To get number of utxos for each address */
+ssize_t addres_utxo_n(char * bitcoin_address);
+    
+/* To get utxo for each address */
+ssize_t addres_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_address);
+
 /* To get wallet balances in satoshis  */
 int32_t wallet_balances(void);
-    
+
+/* Decode base58 string */
+gcry_error_t base58_decode(uint8_t *key, char *base58, size_t char_length);
+
 #endif  // wall_e_t_h__
