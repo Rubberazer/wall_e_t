@@ -44,7 +44,7 @@ static size_t cb(char *data, size_t size, size_t nmemb, void *clientp) {
 
 ssize_t address_balance(char * bitcoin_address) {
     ssize_t error = 0;
-    char url_api[300] = "https://blockchain.info/balance?active=";
+    char url_api[500] = "https://blockchain.info/balance?active=";
     CURL *curl;
     CURLcode res;
     struct memory chunk = {0};
@@ -95,7 +95,7 @@ ssize_t address_balance(char * bitcoin_address) {
 
 ssize_t address_utxo_n(char * bitcoin_address) {
     ssize_t error = 0;
-    char url_api[1000] = "https://blockchain.info/unspent?active=";
+    char url_api[500] = "https://blockchain.info/unspent?active=";
     CURL *curl;
     CURLcode res;
     struct memory chunk = {0};
@@ -139,7 +139,7 @@ ssize_t address_utxo_n(char * bitcoin_address) {
 
 ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_address) {
     ssize_t error = 0;
-    char url_api[1000] = "https://blockchain.info/unspent?active=";
+    char url_api[500] = "https://blockchain.info/unspent?active=";
     CURL *curl;
     CURLcode res;
     struct memory chunk = {0};
