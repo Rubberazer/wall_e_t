@@ -1584,3 +1584,91 @@ gcry_error_t base58_decode(uint8_t *key, size_t key_length, char *base58, size_t
  allocerr1:
     return err;
 }
+
+gcry_error_t base32_decode(uint8_t *key, size_t key_length, char *base32, size_t char_length) {
+    gcry_error_t err = GPG_ERR_NO_ERROR;
+    gcry_mpi_t mpi_factor = NULL;
+    gcry_mpi_t mpi_swap = NULL;
+    gcry_mpi_t mpi_result = NULL;
+    gcry_mpi_t mpi_sum = NULL;
+    uint8_t *string_swap = NULL;
+    char base32_arr[] = BECH32;
+
+    if (key == NULL || char_length < 1) {
+	fprintf (stderr, "key can't be empty\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }
+    if (base32 == NULL) {
+	fprintf(stderr, "base32 can´t be NULL\n");
+	err = gcry_error_from_errno(EINVAL);
+	return err;
+    }	
+
+    mpi_factor = gcry_mpi_snew(char_length*8);
+    if (mpi_factor == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr1;
+    }
+    mpi_swap = gcry_mpi_snew(char_length*8);
+    if (mpi_swap == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr2;
+    }
+    mpi_result = gcry_mpi_snew(char_length*8);
+    if (mpi_result == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr3;
+    }
+    mpi_sum = gcry_mpi_snew(char_length*8);
+    if (mpi_sum == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr4;
+    }
+    string_swap = (uint8_t *)gcry_calloc_secure(char_length, sizeof(uint8_t));
+    if (string_swap == NULL) {
+	err = gcry_error_from_errno(ENOMEM);
+	goto allocerr5;
+    }
+
+    for (size_t i = 0; i < char_length; i++) {
+	for (size_t j = 0; j < 32; j++) {
+	    if (base32[char_length-i-1] == base32_arr[j]) {
+		string_swap[i] = j;
+		break;
+	    }
+	}
+    }
+
+    mpi_result = gcry_mpi_set_ui(mpi_result, string_swap[0]);
+    for (size_t i = 1; i < char_length; i++) {
+	mpi_factor = gcry_mpi_set_ui(mpi_factor, 1);
+	mpi_swap = gcry_mpi_set_ui(mpi_swap, 0);
+	mpi_sum = gcry_mpi_set_ui(mpi_sum, 0);
+	for (size_t j = 0; j < i; j++){
+	    gcry_mpi_mul_ui(mpi_swap, mpi_factor, 32);
+	    mpi_factor = gcry_mpi_set(mpi_factor, mpi_swap);
+	}
+	gcry_mpi_mul_ui(mpi_sum, mpi_swap, string_swap[i]);
+	gcry_mpi_add(mpi_result, mpi_result, mpi_sum);
+    }
+    
+    gcry_mpi_print(GCRYMPI_FMT_USG, key, key_length, NULL, mpi_result);	   
+    if (err) {
+	fprintf(stderr, "Failed to convert mpi into uint8_t\n");
+	goto allocerr6;
+    }
+
+ allocerr6:
+    gcry_free(string_swap);
+ allocerr5:
+    gcry_mpi_release(mpi_sum);
+ allocerr4:
+    gcry_mpi_release(mpi_result);
+ allocerr3:
+    gcry_mpi_release(mpi_swap);
+ allocerr2:
+    gcry_mpi_release(mpi_factor);
+ allocerr1:
+    return err;
+}

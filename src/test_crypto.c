@@ -217,7 +217,7 @@ int main(void) {
 	printf("%02x", mnem->keys.key_pub_comp[i]);
     }
 
-    char *test_base58 = "2MywQiAjfcwDqTeKrayAzuuYUTpbFEVzwbs";
+    char *test_base58 = "32XxrQVA9Fuyi9xDyiA6kysacd8p5wdPDq";
     uint8_t test_decode58[25] = {0};
     err = base58_decode(test_decode58, 25, test_base58, strlen(test_base58));
     if (err) {
@@ -229,7 +229,20 @@ int main(void) {
     for (uint32_t i = 0; i < 25; i++) {
 	printf("%02x", test_decode58[i]);
     }
-    
+
+    char *test_base32 = "qw09xhr72fs5270uh4lcnzh2dwprrqlk0"; // bc1qw09xhr72fs5270uh4lcnzh2dwprrqlk0evptcs
+    uint8_t test_decode32[22] = {0};
+    err = base32_decode(test_decode32, 22, test_base32, strlen(test_base32)) ;
+    if (err) {
+	printf("Problem decoding base32 address, error code:%s & error source:%s", gcry_strerror(err), gcry_strsource(err));
+    }
+
+    printf("\nPrinting original base 32:\n%s \n", test_base32);
+    printf("Printing decoded base 32: \n");
+    for (uint32_t i = 0; i < 22; i++) {
+	printf("%02x", test_decode32[i]);
+    }
+
     gcry_free(signature);
     gcry_free(bech32_address);
     gcry_free(key_address);

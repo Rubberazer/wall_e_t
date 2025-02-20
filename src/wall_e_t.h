@@ -333,4 +333,7 @@ int32_t wallet_balances(void);
 /* Decode base58 string */
 gcry_error_t base58_decode(uint8_t *key, size_t key_length, char *base58, size_t char_length);
 
+/* Decode base32 string */
+gcry_error_t base32_decode(uint8_t *key, size_t key_length, char *base32, size_t char_length); 
+
 #endif  // wall_e_t_h__
