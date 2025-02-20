@@ -240,7 +240,7 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	goto allocerr7;
     }
 	
-    for (uint32_t i = 0; i < uint8_length; i++) {
+    for (size_t i = 0; i < uint8_length; i++) {
 	if (key[i] == 0x00) {
 	    strcpy(base58+i, "1");
 	}
@@ -248,8 +248,8 @@ gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_
 	    break;
     }
 
-    uint32_t counter = 0;
-    for (uint32_t i = 0;; i++) {
+    size_t counter = 0;
+    for (size_t i = 0;; i++) {
 	gcry_mpi_div(mpi_result, mpi_mod, mpi_key, mpi_base58, -1);
 	err = gcry_mpi_get_ui(uint8_swap, mpi_mod);
 	if (err) {
