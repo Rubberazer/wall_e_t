@@ -1180,7 +1180,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	fprintf(stderr, "Failed to create context handle\n");
 	goto allocerr5;
     }
-    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, __TIME__, strlen(__TIME__), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
+    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "Archibald Tuttle", strlen("Archibald Tuttle"), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
     if (err) {
 	fprintf(stderr, "Failed to derive key from password\n");
 	goto allocerr6;
@@ -1274,7 +1274,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     memcpy(IV, in+(in_length-16), 16);
     memcpy(s_input, in, in_length-16);
     
-    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, __TIME__, strlen(__TIME__), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
+    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "Archibald Tuttle", strlen("Archibald Tuttle"), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
     if (err) {
 	fprintf(stderr, "Failed to derive key from password\n");
 	goto allocerr6;
@@ -1497,14 +1497,13 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length
     return err;
 }
 
-gcry_error_t base58_decode(uint8_t *key, char *base58, size_t char_length) {
+gcry_error_t base58_decode(uint8_t *key, size_t key_length, char *base58, size_t char_length) {
     gcry_error_t err = GPG_ERR_NO_ERROR;
-    gcry_mpi_t mpi_base58 = NULL;
-    gcry_mpi_t mpi_key = NULL;
+    gcry_mpi_t mpi_factor = NULL;
+    gcry_mpi_t mpi_swap = NULL;
     gcry_mpi_t mpi_result = NULL;
-    gcry_mpi_t mpi_mod = NULL;
-    char *string_swap = NULL;
-    uint32_t *uint8_swap = NULL;
+    gcry_mpi_t mpi_sum = NULL;
+    uint8_t *string_swap = NULL;
     char base58_arr[] = BASE58;
 
     if (key == NULL || char_length < 1) {
@@ -1518,13 +1517,13 @@ gcry_error_t base58_decode(uint8_t *key, char *base58, size_t char_length) {
 	return err;
     }	
 
-    mpi_base58 = gcry_mpi_snew(8);
-    if (mpi_base58 == NULL) {
+    mpi_factor = gcry_mpi_snew(char_length*8);
+    if (mpi_factor == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr1;
     }
-    mpi_key = gcry_mpi_snew(char_length*8);
-    if (mpi_key == NULL) {
+    mpi_swap = gcry_mpi_snew(char_length*8);
+    if (mpi_swap == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr2;
     }
@@ -1533,66 +1532,55 @@ gcry_error_t base58_decode(uint8_t *key, char *base58, size_t char_length) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr3;
     }
-    mpi_mod = gcry_mpi_snew(8);
-    if (mpi_mod == NULL) {
+    mpi_sum = gcry_mpi_snew(char_length*8);
+    if (mpi_sum == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr4;
     }
-    string_swap = (char *)gcry_calloc_secure(char_length, sizeof(char));
+    string_swap = (uint8_t *)gcry_calloc_secure(char_length, sizeof(uint8_t));
     if (string_swap == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr5;
     }
-    uint8_swap = (uint32_t *)gcry_calloc_secure(1, sizeof(uint32_t));
-    if (uint8_swap == NULL) {
-	err = gcry_error_from_errno(ENOMEM);
+
+    for (uint32_t i = 0; i < char_length; i++) {
+	for (uint32_t j = 0; j < 58; j++) {
+	    if (base58[char_length-i-1] == base58_arr[j]) {
+		string_swap[i] = j;
+		break;
+	    }
+	}
+    }
+
+    mpi_result = gcry_mpi_set_ui(mpi_result, string_swap[0]);
+    for (uint32_t i = 1; i < char_length; i++) {
+	mpi_factor = gcry_mpi_set_ui(mpi_factor, 1);
+	mpi_swap = gcry_mpi_set_ui(mpi_swap, 0);
+	mpi_sum = gcry_mpi_set_ui(mpi_sum, 0);
+	for (uint32_t j = 0; j < i; j++){
+	    gcry_mpi_mul_ui(mpi_swap, mpi_factor, 58);
+	    mpi_factor = gcry_mpi_set(mpi_factor, mpi_swap);
+	}
+	gcry_mpi_mul_ui(mpi_sum, mpi_swap, string_swap[i]);
+	gcry_mpi_add(mpi_result, mpi_result, mpi_sum);
+    }
+    
+    gcry_mpi_print(GCRYMPI_FMT_USG, key, key_length, NULL, mpi_result);	   
+    if (err) {
+	fprintf(stderr, "Failed to convert mpi into uint8_t\n");
 	goto allocerr6;
     }
 
-    mpi_base58 = gcry_mpi_set_ui(mpi_base58, 58);
-    err = gcry_mpi_scan(&mpi_key, GCRYMPI_FMT_USG, key, char_length, NULL);
-    if (err) {
-	fprintf(stderr, "Failed to scan key to mpi format\n");
-	goto allocerr7;
-    }
-    ssize_t comp = gcry_mpi_cmp_ui(mpi_key, 0);
-    if (!comp) {
-	fprintf(stderr, "Key is zero\n");
-	err = gcry_error_from_errno(EINVAL);
-	goto allocerr7;
-    }
-	
-   
-    uint32_t counter = 0;
-    for (uint32_t i = 0;; i++) {
-	gcry_mpi_div(mpi_result, mpi_mod, mpi_key, mpi_base58, -1);
-	err = gcry_mpi_get_ui(uint8_swap, mpi_mod);
-	if (err) {
-	    fprintf(stderr, "Failed operation key mod 58\n");
-	    goto allocerr7;
-	}
-	memcpy(string_swap+char_length-i, &base58_arr[*uint8_swap], 1);	
-	mpi_key = gcry_mpi_set(mpi_key, mpi_result);
-	if (!gcry_mpi_cmp_ui(mpi_key, 0)) {
-	    counter = char_length-i;
-	    break;
-	}
-    }
-
-    strncpy(base58+strlen(base58), string_swap+counter, char_length-strlen(base58));
-    	    
- allocerr7:
-    gcry_free(uint8_swap);
  allocerr6:
     gcry_free(string_swap);
  allocerr5:
-    gcry_mpi_release(mpi_mod);
+    gcry_mpi_release(mpi_sum);
  allocerr4:
     gcry_mpi_release(mpi_result);
  allocerr3:
-    gcry_mpi_release(mpi_key);
+    gcry_mpi_release(mpi_swap);
  allocerr2:
-    gcry_mpi_release(mpi_base58);
+    gcry_mpi_release(mpi_factor);
  allocerr1:
     return err;
 }

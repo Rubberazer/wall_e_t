@@ -202,30 +202,34 @@ int main(void) {
     }
     printf("\nPrinting recovered seed: \n");
     for (uint32_t i = 0; i < 64; i++) {
-	printf("%02x",mnem->seed[i]);
+	printf("%02x", mnem->seed[i]);
     }
     printf("\nPrinting recovered master key: \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x",mnem->keys.key_priv[i]);
+	printf("%02x", mnem->keys.key_priv[i]);
     }
     printf("\nPrinting recovered master chain code: \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x",mnem->keys.chain_code[i]);
+	printf("%02x", mnem->keys.chain_code[i]);
     }
     printf("\nPrinting recovered compressed public master key: \n");
     for (uint32_t i = 0; i < 33; i++) {
-	printf("%02x",mnem->keys.key_pub_comp[i]);
+	printf("%02x", mnem->keys.key_pub_comp[i]);
     }
 
-    //printf("\nSize of gcry_sexp_t: %lu\n", sizeof(gcry_sexp_t));
-
-    char *test_decode58 = "1qwvrzibMbbczFnrcVWLMWeU6r6buJbdo";
-    uint8_t test_decode58_uint8[33];
-    err = base58_decode(test_decode58_uint8, test_decode58, strlen(test_decode58));
+    char *test_base58 = "2MywQiAjfcwDqTeKrayAzuuYUTpbFEVzwbs";
+    uint8_t test_decode58[25] = {0};
+    err = base58_decode(test_decode58, 25, test_base58, strlen(test_base58));
     if (err) {
 	printf("Problem decoding base58 address, error code:%s & error source:%s", gcry_strerror(err), gcry_strsource(err));
     }
 
+    printf("\nPrinting original base 58:\n%s \n", test_base58);
+    printf("Printing decoded base 58: \n");
+    for (uint32_t i = 0; i < 25; i++) {
+	printf("%02x", test_decode58[i]);
+    }
+    
     gcry_free(signature);
     gcry_free(bech32_address);
     gcry_free(key_address);

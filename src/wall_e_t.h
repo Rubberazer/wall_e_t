@@ -331,6 +331,6 @@ ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_addr
 int32_t wallet_balances(void);
 
 /* Decode base58 string */
-gcry_error_t base58_decode(uint8_t *key, char *base58, size_t char_length);
+gcry_error_t base58_decode(uint8_t *key, size_t key_length, char *base58, size_t char_length);
 
 #endif  // wall_e_t_h__
