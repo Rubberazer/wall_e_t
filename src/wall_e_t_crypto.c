@@ -1180,7 +1180,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	fprintf(stderr, "Failed to create context handle\n");
 	goto allocerr5;
     }
-    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "bitcoin", strlen("bitcoin"), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
+    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, __TIME__, strlen(__TIME__), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
     if (err) {
 	fprintf(stderr, "Failed to derive key from password\n");
 	goto allocerr6;
@@ -1274,7 +1274,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     memcpy(IV, in+(in_length-16), 16);
     memcpy(s_input, in, in_length-16);
     
-    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "bitcoin", strlen("bitcoin"), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
+    err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, __TIME__, strlen(__TIME__), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
     if (err) {
 	fprintf(stderr, "Failed to derive key from password\n");
 	goto allocerr6;
