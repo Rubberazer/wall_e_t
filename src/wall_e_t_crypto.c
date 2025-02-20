@@ -1543,8 +1543,8 @@ gcry_error_t base58_decode(uint8_t *key, size_t key_length, char *base58, size_t
 	goto allocerr5;
     }
 
-    for (uint32_t i = 0; i < char_length; i++) {
-	for (uint32_t j = 0; j < 58; j++) {
+    for (size_t i = 0; i < char_length; i++) {
+	for (size_t j = 0; j < 58; j++) {
 	    if (base58[char_length-i-1] == base58_arr[j]) {
 		string_swap[i] = j;
 		break;
@@ -1553,11 +1553,11 @@ gcry_error_t base58_decode(uint8_t *key, size_t key_length, char *base58, size_t
     }
 
     mpi_result = gcry_mpi_set_ui(mpi_result, string_swap[0]);
-    for (uint32_t i = 1; i < char_length; i++) {
+    for (size_t i = 1; i < char_length; i++) {
 	mpi_factor = gcry_mpi_set_ui(mpi_factor, 1);
 	mpi_swap = gcry_mpi_set_ui(mpi_swap, 0);
 	mpi_sum = gcry_mpi_set_ui(mpi_sum, 0);
-	for (uint32_t j = 0; j < i; j++){
+	for (size_t j = 0; j < i; j++){
 	    gcry_mpi_mul_ui(mpi_swap, mpi_factor, 58);
 	    mpi_factor = gcry_mpi_set(mpi_factor, mpi_swap);
 	}
