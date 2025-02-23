@@ -73,6 +73,11 @@ This will show on screen the amount of satoshis per bitcoin address and the tota
 
     ./wall_e_t -balance
 	
+### Transaction (not ready yet)
+It will generate a raw transaction based on a single input and 2 potential outputs
+
+    ./wall_e_t -transaction
+
 ### Transfer (not ready yet)
 To transfer your coins to some other address
 
