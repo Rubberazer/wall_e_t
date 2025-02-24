@@ -1121,8 +1121,8 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     uint8_t *IV = NULL;
     gcry_cipher_hd_t hd;
     uint8_t *s_key = NULL;
-    char *s_input = NULL;
-    char *s_output = NULL;
+    uint8_t *s_input = NULL;
+    uint8_t *s_output = NULL;
     uint32_t s_in_length = 0;
         
     if (password == NULL || strlen(password) < 1) {
@@ -1159,12 +1159,12 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr2;
     }	
-    s_input = (char *)gcry_calloc_secure(s_in_length, sizeof(uint8_t));
+    s_input = (uint8_t *)gcry_calloc_secure(s_in_length, sizeof(uint8_t));
     if (s_input == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr3;
     }
-    s_output = (char *)gcry_calloc_secure(s_in_length, sizeof(uint8_t));
+    s_output = (uint8_t *)gcry_calloc_secure(s_in_length, sizeof(uint8_t));
     if (s_output == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr4;
@@ -1225,8 +1225,8 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     uint8_t *IV = NULL;
     gcry_cipher_hd_t hd;
     uint8_t *s_key = NULL;
-    char *s_output = NULL;
-    char *s_input = NULL;
+    uint8_t *s_output = NULL;
+    uint8_t *s_input = NULL;
     
     if (password == NULL || strlen(password) < 1) {
 	fprintf(stderr, "password can't be empty\n");
@@ -1254,12 +1254,12 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr2;
     }
-    s_input = (char *)gcry_calloc_secure(in_length-16, sizeof(uint8_t));
+    s_input = (uint8_t *)gcry_calloc_secure(in_length-16, sizeof(uint8_t));
     if (s_input == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr3;
     }	    
-    s_output = (char *)gcry_calloc_secure(in_length-16, sizeof(uint8_t));
+    s_output = (uint8_t *)gcry_calloc_secure(in_length-16, sizeof(uint8_t));
     if (s_output == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr4;
