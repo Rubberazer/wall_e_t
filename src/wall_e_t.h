@@ -48,7 +48,7 @@
 #define ZPUB "04b24746"
 #define BASE58 "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 #define BECH32 "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
-#define PASSWD_MAX 66
+#define PASSWD_MAX 41
 #define PASSWD_MIN 10
 #define PASSP_MAX 21
 #define WORDLIST "abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", \

@@ -94,7 +94,7 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
     uint8_t pass_marker = 0;
     while (strlen(passwd) < pass_min || strlen(passwd) > pass_max || ((pass_type == passphrase) && (pass_marker == 0))) {
 	uint32_t pos = 0;
-	fprintf(stdout, "Enter %s, it should be a maximum of %u and a minimum of %u characters long:\n", pass, pass_max, pass_min);
+	fprintf(stdout, "Enter %s, it should be a minimum of %u and a maximum of %u characters long:\n", pass, pass_min, pass_max);
 	fgets(passwd, pass_max+1, stdin);
 	pos = strcspn(passwd, "\n");
 	passwd[pos] = 0;

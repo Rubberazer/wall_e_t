@@ -1171,7 +1171,7 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     }	    
 
     memcpy(s_input, in, in_length);
-    memset(s_input+in_length, (16-(in_length%16)), s_in_length-in_length);
+    memset(s_input+in_length, 0, s_in_length-in_length);
 
     gcry_create_nonce(IV, 16);
     
