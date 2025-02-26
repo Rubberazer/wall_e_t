@@ -1119,11 +1119,9 @@ gcry_error_t WIF_encode(char *WIF, size_t char_length, uint8_t *priv_key, net_t 
 gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password) {
     gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
-    gcry_cipher_hd_t hd;
     uint8_t *s_key = NULL;
-    uint8_t *s_input = NULL;
-    uint8_t *s_output = NULL;
-    uint32_t s_in_length = 0;
+    uint8_t *s_tag = NULL;
+    gcry_cipher_hd_t hd;
         
     if (password == NULL || strlen(password) < 1) {
 	fprintf(stderr, "password can't be empty\n");
@@ -1141,15 +1139,8 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	err = gcry_error_from_errno(EINVAL);
 	return err;
     }
-    // PKCS#7
-    if (!(in_length%16)) {
-	s_in_length = in_length+16;
-    }
-    else {
-	s_in_length = in_length+(16-(in_length%16));
-    }
     
-    IV = (uint8_t *)gcry_calloc_secure(16, sizeof(uint8_t));
+    IV = (uint8_t *)gcry_calloc_secure(12, sizeof(uint8_t));
     if (IV == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr1;
@@ -1159,59 +1150,59 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr2;
     }	
-    s_input = (uint8_t *)gcry_calloc_secure(s_in_length, sizeof(uint8_t));
-    if (s_input == NULL) {
+    s_tag = (uint8_t *)gcry_calloc_secure(16, sizeof(uint8_t));
+    if (s_tag == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr3;
-    }
-    s_output = (uint8_t *)gcry_calloc_secure(s_in_length, sizeof(uint8_t));
-    if (s_output == NULL) {
-	err = gcry_error_from_errno(ENOMEM);
-	goto allocerr4;
     }	    
 
-    memcpy(s_input, in, in_length);
-    memset(s_input+in_length, 0, s_in_length-in_length);
-
-    gcry_create_nonce(IV, 16);
-    
-    err = gcry_cipher_open(&hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, GCRY_CIPHER_SECURE);
+    gcry_create_nonce(IV, 12);
+      
+    err = gcry_cipher_open(&hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_GCM_SIV, GCRY_CIPHER_SECURE);
     if (err) {
 	fprintf(stderr, "Failed to create context handle\n");
-	goto allocerr5;
+	goto allocerr4;
     }
     err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "Archibald Tuttle", strlen("Archibald Tuttle"), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
     if (err) {
 	fprintf(stderr, "Failed to derive key from password\n");
-	goto allocerr6;
+	goto allocerr5;
     }
         
     err = gcry_cipher_setkey(hd, s_key, 32);
     if (err) {
 	fprintf(stderr, "Failed to set key into context handle\n");
-	goto allocerr6;
+	goto allocerr5;
     }
-    err = gcry_cipher_setiv(hd, IV, 16);
+    err = gcry_cipher_setiv(hd, IV, 12);
     if (err) {
 	fprintf(stderr, "Failed to set IV into context handle\n");
-	goto allocerr6;
+	goto allocerr5;
     }
-    
-    err = gcry_cipher_encrypt(hd, s_output, s_in_length, s_input, s_in_length);
+    err = gcry_cipher_authenticate(hd, "1234567890qwertyuiopasdfghjklzxc", 32*sizeof(char));
+    if (err) {
+	fprintf(stderr, "Failed to set AAD into context handle\n");
+	goto allocerr5;
+    }
+       
+    err = gcry_cipher_encrypt(hd, out, in_length, in, in_length);
     if (err) {
 	fprintf(stderr, "Failed to encrypt\n");
-	goto allocerr6;
+	goto allocerr5;
     }
-   
-    memcpy(out, s_output, s_in_length);
-    memcpy(out+s_in_length, IV, 16);
+    err = gcry_cipher_gettag(hd, s_tag, 16);
+    if (err) {
+	fprintf(stderr, "Failed to get authentication tag\n");
+	goto allocerr5;
+    }
     
- allocerr6:
-    gcry_cipher_close(hd);
+    memcpy(out+in_length, s_tag, 16);
+    memcpy(out+in_length+16, IV, 12);
+
  allocerr5:
-    gcry_free(s_output);
+    gcry_cipher_close(hd);
  allocerr4:
-    gcry_free(s_input);
+    gcry_free(s_tag);
  allocerr3:
     gcry_free(s_key);
  allocerr2:
@@ -1223,10 +1214,10 @@ gcry_error_t encrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *password)  {
     gcry_error_t err = GPG_ERR_NO_ERROR;
     uint8_t *IV = NULL;
-    gcry_cipher_hd_t hd;
     uint8_t *s_key = NULL;
-    uint8_t *s_output = NULL;
-    uint8_t *s_input = NULL;
+    uint8_t *s_tag = NULL;
+    gcry_cipher_hd_t hd;
+    uint32_t s_in_length = 0;
     
     if (password == NULL || strlen(password) < 1) {
 	fprintf(stderr, "password can't be empty\n");
@@ -1244,7 +1235,7 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	return err;
     }    
     
-    IV = (uint8_t *)gcry_calloc_secure(16, sizeof(uint8_t));
+    IV = (uint8_t *)gcry_calloc_secure(12, sizeof(uint8_t));
     if (IV == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr1;
@@ -1254,57 +1245,64 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr2;
     }
-    s_input = (uint8_t *)gcry_calloc_secure(in_length-16, sizeof(uint8_t));
-    if (s_input == NULL) {
+    s_tag = (uint8_t *)gcry_calloc_secure(16, sizeof(uint8_t));
+    if (s_tag == NULL) {
 	err = gcry_error_from_errno(ENOMEM);
 	goto allocerr3;
     }	    
-    s_output = (uint8_t *)gcry_calloc_secure(in_length-16, sizeof(uint8_t));
-    if (s_output == NULL) {
-	err = gcry_error_from_errno(ENOMEM);
-	goto allocerr4;
-    }	    
-
-    err = gcry_cipher_open(&hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_CBC, GCRY_CIPHER_SECURE);
+    
+    err = gcry_cipher_open(&hd, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_GCM_SIV, GCRY_CIPHER_SECURE);
     if (err) {
 	fprintf(stderr, "Failed to create context handle\n");
-	goto allocerr5;
+	goto allocerr4;
     }
-    
-    memcpy(IV, in+(in_length-16), 16);
-    memcpy(s_input, in, in_length-16);
+
+    // Authentication tag 16 bytes + IV 12 bytes
+    s_in_length = in_length-16-12;
+    memcpy(s_tag, in+s_in_length, 16);
+    memcpy(IV, in+s_in_length+16, 12);
     
     err = gcry_kdf_derive(password, strlen(password), GCRY_KDF_PBKDF2, GCRY_MD_SHA256, "Archibald Tuttle", strlen("Archibald Tuttle"), PBKDF2_PASS, gcry_md_get_algo_dlen(GCRY_MD_SHA256), s_key);
     if (err) {
 	fprintf(stderr, "Failed to derive key from password\n");
-	goto allocerr6;
+	goto allocerr5;
     }
        
     err = gcry_cipher_setkey(hd, s_key, 32);
     if (err) {
 	fprintf(stderr, "Failed to set key into context handle\n");
-	goto allocerr6;
+	goto allocerr5;
     }
-    err = gcry_cipher_setiv(hd, IV, 16);
+    err = gcry_cipher_setiv(hd, IV, 12);
     if (err) {
 	fprintf(stderr, "Failed to set IV into context handle\n");
-	goto allocerr6;
+	goto allocerr5;
+    }
+    err = gcry_cipher_authenticate(hd, "1234567890qwertyuiopasdfghjklzxc", 32*sizeof(char));
+    if (err) {
+	fprintf(stderr, "Failed to set AAD into context handle\n");
+	goto allocerr5;
     }
 
-    err = gcry_cipher_decrypt(hd, s_output, in_length-16, s_input, in_length-16);
+    err = gcry_cipher_set_decryption_tag(hd, s_tag, 16);
     if (err) {
-	fprintf(stderr, "Failed to decrypt\n");
-	goto allocerr6;
+	fprintf(stderr, "Failed to set decryption tag\n");
+	goto allocerr5;
+    }
+    err = gcry_cipher_decrypt(hd, out, s_in_length, in, s_in_length);
+    if (err) {
+	//fprintf(stderr, "Failed to decrypt\n");
+	goto allocerr5;
+    }
+    err = gcry_cipher_checktag(hd, s_tag, 16);
+    if (err) {
+	//fprintf(stderr, "Authentication failed\n");
     }
     
-    memcpy(out, s_output, in_length-16);
-   
- allocerr6:
-    gcry_cipher_close(hd);
  allocerr5:
-    gcry_free(s_output);
+    gcry_cipher_close(hd);
  allocerr4:
-    gcry_free(s_input);
+    gcry_free(s_tag);
  allocerr3:
     gcry_free(s_key);	
  allocerr2:

@@ -229,7 +229,7 @@ int32_t create_wallet(void) {
     fprintf(stdout, "Passphrase registered successfully\n\n");
     pass_ctrl = 1;
 
-    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Root Keys into your wallet\n");
+    fprintf(stdout, "You will also need to create a password to encrypt (AES256-GCM-SIV) your Private Root Keys into your wallet\n");
     while(pass_ctrl) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
@@ -424,7 +424,7 @@ int32_t recover_wallet(void) {
 	goto allocerr7;
     }
 
-    fprintf(stdout, "You will also need to create a password to encrypt (AES256CBC) your Private Root Keys into your wallet\n");
+    fprintf(stdout, "You will also need to create a password to encrypt (AES256-GCM-SIV) your Private Root Keys into your wallet\n");
     while(pass_ctrl) {
 	error = getpasswd((char *)(&passwd[0]), password);
 	if (error) {
@@ -706,14 +706,8 @@ int32_t show_key(void) {
 	goto allocerr5;
     }
     
-    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
-    if (!((sizeof(key_pair_t))%16)) {
-	s_in_length = sizeof(key_pair_t)+16;
-    }
-    else {
-	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
-    }
-    s_in_length += 16;
+    // Message: key_pair_t + Authentication tag + IV length (12 bytes)
+    s_in_length = sizeof(key_pair_t)+16+12;
     memset(verifier, 0x11, 64);
 
     fprintf(stdout, "This menu will show your Root key on screen. Maybe it is a good idea if you disconnect your computer from the Internet now?:\n");
@@ -725,8 +719,12 @@ int32_t show_key(void) {
 	    error = 0;
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
-	if (err) {
+	if (err > GPG_ERR_NO_ERROR && err != GPG_ERR_CHECKSUM) {
 	    fprintf(stderr, "Problem decrypting message\n");
+	    err = GPG_ERR_NO_ERROR;
+	}
+	else if (err == GPG_ERR_CHECKSUM) {
+	    fprintf(stderr, "Authentication error, your keys could have been corrupted or tampered with\n");
 	    err = GPG_ERR_NO_ERROR;
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
@@ -826,14 +824,8 @@ int32_t receive_coin(void) {
 	goto allocerr6;
     }
     
-    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
-    if (!((sizeof(key_pair_t))%16)) {
-	s_in_length = sizeof(key_pair_t)+16;
-    }
-    else {
-	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
-    }
-    s_in_length += 16;
+   // Message: key_pair_t + Authentication tag + IV length (12 bytes)
+    s_in_length = sizeof(key_pair_t)+16+12;
     memset(verifier, 0x11, 64);
 
     fprintf(stdout, "Please type your password:\n");
@@ -844,8 +836,12 @@ int32_t receive_coin(void) {
 	    error = 0;
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
-	if (err) {
+	if (err > GPG_ERR_NO_ERROR && err != GPG_ERR_CHECKSUM) {
 	    fprintf(stderr, "Problem decrypting message\n");
+	    err = GPG_ERR_NO_ERROR;
+	}
+	else if (err == GPG_ERR_CHECKSUM) {
+	    fprintf(stderr, "Authentication error, your keys could have been corrupted or tampered with\n");
 	    err = GPG_ERR_NO_ERROR;
 	}
 	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
@@ -1084,15 +1080,9 @@ int32_t show_keys(void) {
 	    gcry_free(root_keys);
 	    goto allocerr1;
 	}
-    
-	// PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
-	if (!((sizeof(key_pair_t))%16)) {
-	    s_in_length = sizeof(key_pair_t)+16;
-	}
-	else {
-	    s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
-	}
-	s_in_length += 16;
+
+	// Message: key_pair_t + Authentication tag + IV length (12 bytes)
+	s_in_length = sizeof(key_pair_t)+16+12;
 	memset(verifier, 0x11, 64);
 
 	fprintf(stdout, "We are going to show your private keys, maybe is a good idea if you disconnect from the Internet now?\n");
@@ -1104,8 +1094,12 @@ int32_t show_keys(void) {
 		error = 0;
 	    }	
 	    err = decrypt_AES256((uint8_t *)root_keys, query_root->value, s_in_length, passwd);
-	    if (err) {
+	    if (err > GPG_ERR_NO_ERROR && err != GPG_ERR_CHECKSUM) {
 		fprintf(stderr, "Problem decrypting message\n");
+		err = GPG_ERR_NO_ERROR;
+	    }
+	    else if (err == GPG_ERR_CHECKSUM) {
+		fprintf(stderr, "Authentication error, your keys could have been corrupted or tampered with\n");
 		err = GPG_ERR_NO_ERROR;
 	    }
 	    if (memcmp(root_keys->key_priv_chain, verifier, 64)) {

@@ -129,15 +129,9 @@ int main(void) {
     char encrypted_s[128] = "";
     char decrypted_s[256] = "";
 
-    // PKCS#7+IV length (16 bytes)
+    // PKCS#7 + IV length (12 bytes) + Authentication tag (16 bytes)
     uint32_t s_in_length = 0;
-    if (!((strlen(message))%16)) {
-	s_in_length = strlen(message)+16;
-    }
-    else {
-	s_in_length = strlen(message)+(16-(strlen(message)%16));
-    }
-    s_in_length += 16;
+    s_in_length = strlen(message)+16+12;
     
     err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc&we45./");
     if (err) {
@@ -152,12 +146,12 @@ int main(void) {
 
     err = decrypt_AES256((uint8_t *)decrypted_s, (uint8_t *)encrypted_s, s_in_length, "abc&we45./");
     if (err) {
-	printf("Problem decrypting message, error code:%d", err);
+	printf("Problem decrypting message, with error: %s", gcry_strerror(err));
     }
 
     printf("\nDecrypted message: %s\n", decrypted_s);
     printf("\nPrinting decrypted message in hex : \n");
-    for (uint32_t i = 0; i < 16; i++) {
+    for (uint32_t i = 0; i < s_in_length-12-16; i++) {
 	printf("%02x", (uint8_t)decrypted_s[i]);
     }
 

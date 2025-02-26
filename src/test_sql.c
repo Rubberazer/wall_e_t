@@ -75,16 +75,11 @@ int main(int arg, char *arv[]) {
     }
 
     memset(keys[1].key_priv, 0, 32);
-    // PKCS#7+IV length (16 bytes) for key_pair_t: 256 bytes
+   
+    // Message: key_pair_t + Authentication tag + IV length (12 bytes)
     uint32_t s_in_length = 0;
-    if (!((sizeof(key_pair_t))%16)) {
-	s_in_length = sizeof(key_pair_t)+16;
-    }
-    else {
-	s_in_length = sizeof(key_pair_t)+(16-((sizeof(key_pair_t))%16));
-    }
-    s_in_length += 16;
-
+    s_in_length = sizeof(key_pair_t)+16+12;
+    
     err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, "abc&we45dsad./");
     if (err) {
 	printf("Problem decrypting message, error code:%d", err);
