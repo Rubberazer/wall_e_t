@@ -1291,13 +1291,9 @@ gcry_error_t decrypt_AES256(uint8_t *out, uint8_t *in, size_t in_length, char *p
     }
     err = gcry_cipher_decrypt(hd, out, s_in_length, in, s_in_length);
     if (err) {
-	//fprintf(stderr, "Failed to decrypt\n");
 	goto allocerr5;
     }
     err = gcry_cipher_checktag(hd, s_tag, 16);
-    if (err) {
-	//fprintf(stderr, "Authentication failed\n");
-    }
     
  allocerr5:
     gcry_cipher_close(hd);
