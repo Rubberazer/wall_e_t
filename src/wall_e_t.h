@@ -279,6 +279,12 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length
 /* Reverse array byte by byte */
 gcry_error_t reverse_bytes(uint8_t *output, uint8_t *input, size_t length);
 
+/* Reverse uint32_t number bytes */
+uint32_t reverse_uint32(uint32_t * uint32);
+
+/* Reverse uint64_t number bytes */
+uint64_t reverse_uint64(uint64_t * uint64);
+
 /* Getting passwords from user on terminal */
 int32_t getpasswd(char *passwd, password_t pass_type);
 

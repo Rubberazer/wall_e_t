@@ -175,6 +175,17 @@ gcry_error_t reverse_bytes(uint8_t *output, uint8_t *input, size_t length) {
     return err;
 }
 
+uint32_t reverse_uint32(uint32_t *uint32) {
+    
+    return ((*uint32 << 24) & 0xff000000) | ((*uint32 << 8) & 0x00ff0000) | ((*uint32 >> 8) & 0x0000ff00) | ((*uint32 >> 24) & 0x000000ff);
+}
+
+uint64_t reverse_uint64(uint64_t *uint64) {
+    
+    return ((*uint64 << 56) & 0xff00000000000000) | ((*uint64 << 40) & 0x00ff000000000000) | ((*uint64 << 24) & 0x0000ff0000000000) | ((*uint64 << 8) & 0x000000ff00000000) |
+	    ((*uint64 >> 8) & 0x00000000ff000000) | ((*uint64 >> 24) & 0x0000000000ff0000) | ((*uint64 >>40) & 0x000000000000ff00) | ((*uint64 >> 56) & 0x00000000000000ff);
+}
+
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
     gcry_error_t err = GPG_ERR_NO_ERROR;
     gcry_mpi_t mpi_base58 = NULL;
@@ -448,7 +459,7 @@ gcry_error_t create_mnemonic(char *salt, uint8_t nwords, mnemonic_t *mnem) {
 		
     for (int32_t i = 0, j = 0, k = 0; k < nwords; i++, j++, k++) {
 	memcpy(s_swap, e_seed+i, sizeof(uint32_t));
-	*s_swap = ((*s_swap << 24) & 0xff000000) | ((*s_swap << 8) & 0x00ff0000) | ((*s_swap >> 8) & 0x0000ff00) | ((*s_swap >> 24) & 0x000000ff);
+	*s_swap = reverse_uint32(s_swap);
 	*s_swap = *s_swap >> (21-(3*j));
 	*s_swap = *s_swap & 0x7ff;
         *words[k] = wordlist[*s_swap];
@@ -725,7 +736,7 @@ gcry_error_t key_deriv(key_pair_t *child_keys, uint8_t *parent_priv_key, uint8_t
 	*index = key_index;
     }
     child_keys->key_index = *index;
-    *index = ((*index << 24) & 0xff000000) | ((*index << 8) & 0x00ff0000) | ((*index >> 8) & 0x0000ff00) | ((*index >> 24) & 0x000000ff);
+    *index = reverse_uint32(index);
 
     if (hardened == hardened_child) {
 	swap_priv_key[0] = 0x00;
@@ -911,7 +922,7 @@ gcry_error_t ext_keys_address(key_address_t *keys_address, key_pair_t *keys, uin
 	BIP_PUB = ZPUB;		
     }
     
-    key_index = ((key_index << 24) & 0xff000000) | ((key_index << 8) & 0x00ff0000) | ((key_index >> 8) & 0x0000ff00) | ((key_index >> 24) & 0x000000ff);
+    key_index = reverse_uint32(&key_index);
     memcpy(intermediate_key+4, &depth, 1);
     memcpy(intermediate_key+5, hash160, 4);
     memcpy(intermediate_key+9, &key_index, sizeof(uint32_t));
@@ -1017,8 +1028,7 @@ gcry_error_t bech32_encode(char *bech32_address, size_t char_length, uint8_t *ke
     intermediate_key[0] = 0x00; 
     for (int32_t i = 0, j = 0, k = 1; k < intermediate_key_len; j++, k++) {
 	memcpy(s_swap, intermediate_hash+i, sizeof(uint64_t));
-	*s_swap = ((*s_swap << 56) & 0xff00000000000000) | ((*s_swap << 40) & 0x00ff000000000000) | ((*s_swap << 24) & 0x0000ff0000000000) | ((*s_swap << 8) & 0x000000ff00000000) |
-	    ((*s_swap >> 8) & 0x00000000ff000000) | ((*s_swap >> 24) & 0x0000000000ff0000) | ((*s_swap >>40) & 0x000000000000ff00) | ((*s_swap >> 56) & 0x00000000000000ff);
+	*s_swap = reverse_uint64(s_swap);
 	*s_swap = *s_swap >> (59-(5*j));
 	*s_swap = *s_swap & 0x1f;
 	intermediate_key[k] = *s_swap;
