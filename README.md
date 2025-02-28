@@ -17,7 +17,7 @@ Balances are coming through a web API, more specifically, this one: https://bloc
 In order to compile, you will need to install libgcrypt, SQLite and libcurl first e.g. on a Debian based system this should be as simple as:
 
     sudo apt install libgcrypt20-dev && sudo apt install libsqlite3-dev	&& \
-    sudo apt-get install libcurl4-openssl-dev
+    sudo apt install libcurl4-openssl-dev
 
 ## Test vectors
 Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way. Also, Greg's site is an absolute must, highly recommended: https://learnmeabitcoin.com/.
