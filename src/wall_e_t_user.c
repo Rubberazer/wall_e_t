@@ -279,7 +279,6 @@ int32_t create_wallet(void) {
 	goto allocerr6;
     }	
 
-    memset(mnem->keys.key_priv_chain, 0x11, 64);
     query_insert->id = 0;
     query_insert->value_size = 1000;
     err = encrypt_AES256(query_insert->value, (uint8_t *)(&mnem->keys), sizeof(key_pair_t), (char *)(&passwd[1]));
@@ -482,7 +481,6 @@ int32_t recover_wallet(void) {
 	goto allocerr7;
     }
     
-    memset(mnem->keys.key_priv_chain, 0x11, 64);
     query_insert->id = 0;
     query_insert->value_size = 1000;
     err = encrypt_AES256(query_insert->value, (uint8_t *)(&mnem->keys), sizeof(key_pair_t), (char *)(&passwd[1]));
@@ -665,7 +663,6 @@ int32_t show_key(void) {
     query_return_t *query_return = NULL;
     char *passwd = NULL;
     key_address_t *keys_address = NULL;
-    uint8_t verifier[64] = {0};
     uint8_t pass_marker = 1;
     
     err = libgcrypt_initializer();
@@ -708,7 +705,6 @@ int32_t show_key(void) {
     
     // Message: key_pair_t + Authentication tag + IV length (12 bytes)
     s_in_length = sizeof(key_pair_t)+16+12;
-    memset(verifier, 0x11, 64);
 
     fprintf(stdout, "This menu will show your Root key on screen. Maybe it is a good idea if you disconnect your computer from the Internet now?:\n");
     fprintf(stdout, "Please type your password:\n");
@@ -720,16 +716,13 @@ int32_t show_key(void) {
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
 	if (err > GPG_ERR_NO_ERROR && err != GPG_ERR_CHECKSUM) {
-	    fprintf(stderr, "Problem decrypting message\n");
+	    fprintf(stderr, "Wrong password, please try again\n");
+	    memset(passwd, 0, PASSWD_MAX);
 	    err = GPG_ERR_NO_ERROR;
 	}
 	else if (err == GPG_ERR_CHECKSUM) {
 	    fprintf(stderr, "Authentication error, your keys could have been corrupted or tampered with\n");
 	    err = GPG_ERR_NO_ERROR;
-	}
-	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
-	    fprintf(stdout, "Incorrect password, please try again:\n");
-	    memset(passwd, 0, PASSWD_MAX);
 	}
 	else {
 	    pass_marker = 0;
@@ -776,7 +769,6 @@ int32_t receive_coin(void) {
     key_pair_t *root_keys = NULL;
     uint32_t count_addresses = 0;
     char bech32_address[64] = {0};
-    uint8_t verifier[64] = {0};
     uint8_t pass_marker = 1;
     uint32_t s_in_length = 0;
 	
@@ -826,7 +818,6 @@ int32_t receive_coin(void) {
     
    // Message: key_pair_t + Authentication tag + IV length (12 bytes)
     s_in_length = sizeof(key_pair_t)+16+12;
-    memset(verifier, 0x11, 64);
 
     fprintf(stdout, "Please type your password:\n");
     while(pass_marker) {
@@ -837,16 +828,13 @@ int32_t receive_coin(void) {
 	}	
 	err = decrypt_AES256((uint8_t *)root_keys, query_return->value, s_in_length, passwd);
 	if (err > GPG_ERR_NO_ERROR && err != GPG_ERR_CHECKSUM) {
-	    fprintf(stderr, "Problem decrypting message\n");
+	    fprintf(stdout, "Wrong password, please try again:\n");
+	    memset(passwd, 0, PASSWD_MAX);
 	    err = GPG_ERR_NO_ERROR;
 	}
 	else if (err == GPG_ERR_CHECKSUM) {
 	    fprintf(stderr, "Authentication error, your keys could have been corrupted or tampered with\n");
 	    err = GPG_ERR_NO_ERROR;
-	}
-	if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
-	    fprintf(stdout, "Incorrect password, please try again:\n");
-	    memset(passwd, 0, PASSWD_MAX);
 	}
 	else {
 	    pass_marker = 0;
@@ -1010,7 +998,6 @@ int32_t show_keys(void) {
     uint32_t count_receive = 0;
     uint32_t count_change = 0;
     char bitcoin_address[64] = {0};
-    uint8_t verifier[64] = {0};
     uint8_t pass_marker = 1;
     uint32_t s_in_length = 0;
     key_pair_t *child_keys = NULL;
@@ -1083,7 +1070,6 @@ int32_t show_keys(void) {
 
 	// Message: key_pair_t + Authentication tag + IV length (12 bytes)
 	s_in_length = sizeof(key_pair_t)+16+12;
-	memset(verifier, 0x11, 64);
 
 	fprintf(stdout, "We are going to show your private keys, maybe is a good idea if you disconnect from the Internet now?\n");
 	fprintf(stdout, "Please type your password:\n");
@@ -1095,16 +1081,13 @@ int32_t show_keys(void) {
 	    }	
 	    err = decrypt_AES256((uint8_t *)root_keys, query_root->value, s_in_length, passwd);
 	    if (err > GPG_ERR_NO_ERROR && err != GPG_ERR_CHECKSUM) {
-		fprintf(stderr, "Problem decrypting message\n");
+		fprintf(stdout, "Wrong password, please try again:\n");
+		memset(passwd, 0, PASSWD_MAX);
 		err = GPG_ERR_NO_ERROR;
 	    }
 	    else if (err == GPG_ERR_CHECKSUM) {
 		fprintf(stderr, "Authentication error, your keys could have been corrupted or tampered with\n");
 		err = GPG_ERR_NO_ERROR;
-	    }
-	    if (memcmp(root_keys->key_priv_chain, verifier, 64)) {
-		fprintf(stdout, "Incorrect password, please try again:\n");
-		memset(passwd, 0, PASSWD_MAX);
 	    }
 	    else {
 		pass_marker = 0;
