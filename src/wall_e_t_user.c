@@ -733,7 +733,7 @@ int32_t show_key(void) {
 	err = ext_keys_address(keys_address, root_keys, NULL, 0, 0, wBIP84);
 	if (err) {
 	    error = -1;
-	    fprintf(stderr, "Problem creating root keys\n");
+	    fprintf(stderr, "Problem creating address from root keys\n");
 	    goto allocerr5;
 	}
 	fprintf(stdout, "For your eyes only. This below is the Root Private Key in hexadecimal and extended key address format:\n\n"
