@@ -68,12 +68,12 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
     switch (pass_type){
     case password:
 	strcpy(pass, "password");
-	pass_max = PASSWD_MAX-1;
+	pass_max = PASSWD_MAX-2;
 	pass_min = PASSWD_MIN;
 	break;
     case passphrase:
 	strcpy(pass, "passphrase");
-	pass_max = PASSP_MAX-1;
+	pass_max = PASSP_MAX-2;
 	pass_min = 0;
 	break;
     default:
@@ -95,15 +95,15 @@ int32_t getpasswd(char *passwd, password_t pass_type) {
     while (strlen(passwd) < pass_min || strlen(passwd) > pass_max || ((pass_type == passphrase) && (pass_marker == 0))) {
 	uint32_t pos = 0;
 	fprintf(stdout, "Enter %s, it should be a minimum of %u and a maximum of %u characters long:\n", pass, pass_min, pass_max);
-	fgets(passwd, pass_max+1, stdin);
+	fgets(passwd, pass_max+2, stdin);
 	pos = strcspn(passwd, "\n");
-	passwd[pos] = 0;
+	passwd[pos] = '\0';
 	pass_marker = 1;
 	if (strlen(passwd) > pass_max) {
 	    fprintf(stdout, "P%s is too long, please try again\n", &pass[1]);
 	    pass_marker = 0;
 	}
-	else if (strlen(passwd) < pass_min) {
+	if (strlen(passwd) < pass_min) {
 	    fprintf(stdout, "P%s is too short, please try again\n", &pass[1]);
 	    pass_marker = 0;
 	}
@@ -733,7 +733,7 @@ int32_t show_key(void) {
 	err = ext_keys_address(keys_address, root_keys, NULL, 0, 0, wBIP84);
 	if (err) {
 	    error = -1;
-	    fprintf(stderr, "Problem creating address from root keys\n");
+	    fprintf(stderr, "Problem creating root keys\n");
 	    goto allocerr5;
 	}
 	fprintf(stdout, "For your eyes only. This below is the Root Private Key in hexadecimal and extended key address format:\n\n"
