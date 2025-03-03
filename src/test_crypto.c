@@ -135,7 +135,7 @@ int main(void) {
     
     err = encrypt_AES256((uint8_t *)encrypted_s, (uint8_t *)message, strlen(message), "abc&we45./");
     if (err) {
-	printf("Problem encrypting message, error code:%d", err);
+	printf("Problem encrypting message, with erro: %s", gcry_strerror(err));
     }
 
     printf("\nEncrypted message: %s\n", encrypted_s);
