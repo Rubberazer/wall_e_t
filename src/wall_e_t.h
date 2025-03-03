@@ -25,7 +25,7 @@
 #define wall_e_t_h__
 
 #define WALL_E_T_VERSION 0.1
-#define NEED_LIBGCRYPT_VERSION "1.11.0"
+#define NEED_LIBGCRYPT_VERSION "1.10.3"
 #define PBKDF2_ITERN 2048
 #define PBKDF2_PASS 32768
 #define HARD_KEY_IDX 2147483648
