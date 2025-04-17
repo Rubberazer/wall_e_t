@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
     if (opt_mask == 0x12) {
 	err = wallet_balances();
 	if (err) {
-	    fprintf(stderr, "Problem showing keys&addresses, exiting\n");
+	    fprintf(stderr, "Problem showing balances, exiting\n");
 	}
     }    
     
