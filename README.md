@@ -36,7 +36,11 @@ This above will produce 5 executable files, if you run this one: ./test_BIP84 wh
 You should compile with:
 	
 	make wallet
-	
+
+
+[wall_e_t](https://github.com/user-attachments/assets/08e77040-c788-469b-80e4-7f5fad92865c)
+
+ 
 This will generate an executable: wall_e_t, options are:
 ### Create wallet
 This will create a wallet with a mnemonic phrase so you can recover it in the future
