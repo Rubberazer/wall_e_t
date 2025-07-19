@@ -19,6 +19,9 @@ In order to compile, you will need to install libgcrypt, SQLite and libcurl firs
     sudo apt install libgcrypt20-dev && sudo apt install libsqlite3-dev	&& \
     sudo apt install libcurl4-openssl-dev
 
+## Donations
+If you want to donate a few sats so I can test transactions with real coins, you can do it here: bc1qnxa4xaku7jpu9gw5ls8pq95tkzvsxyl4hytllw
+
 ## Test vectors
 Some, but not all of the test vectors included at the end of the concerned BIPs, plus numerous (lots) of tries here: https://iancoleman.io/bip39, all looking good at this point, extremely useful site by the way. Also, Greg's site is an absolute must, highly recommended: https://learnmeabitcoin.com/.
 
