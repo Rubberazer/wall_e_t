@@ -816,7 +816,7 @@ int32_t receive_coin(void) {
 	goto allocerr6;
     }
     
-   // Message: key_pair_t + Authentication tag + IV length (12 bytes)
+    // Message: key_pair_t + Authentication tag + IV length (12 bytes)
     s_in_length = sizeof(key_pair_t)+16+12;
 
     fprintf(stdout, "Please type your password:\n");

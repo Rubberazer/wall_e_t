@@ -183,7 +183,7 @@ uint32_t reverse_uint32(uint32_t *uint32) {
 uint64_t reverse_uint64(uint64_t *uint64) {
     
     return ((*uint64 << 56) & 0xff00000000000000) | ((*uint64 << 40) & 0x00ff000000000000) | ((*uint64 << 24) & 0x0000ff0000000000) | ((*uint64 << 8) & 0x000000ff00000000) |
-	    ((*uint64 >> 8) & 0x00000000ff000000) | ((*uint64 >> 24) & 0x0000000000ff0000) | ((*uint64 >>40) & 0x000000000000ff00) | ((*uint64 >> 56) & 0x00000000000000ff);
+	((*uint64 >> 8) & 0x00000000ff000000) | ((*uint64 >> 24) & 0x0000000000ff0000) | ((*uint64 >>40) & 0x000000000000ff00) | ((*uint64 >> 56) & 0x00000000000000ff);
 }
 
 gcry_error_t base58_encode(char *base58, size_t char_length, uint8_t *key, size_t uint8_length) {
@@ -1478,7 +1478,7 @@ gcry_error_t sign_ECDSA(ECDSA_sign_t *sign, uint8_t *data_in, size_t data_length
     }	
 
  allocerr10:
-     gcry_sexp_release(s_key_pub);
+    gcry_sexp_release(s_key_pub);
  allocerr9:
     gcry_ctx_release(s_key_ctx);    
  allocerr8:

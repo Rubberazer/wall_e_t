@@ -26,8 +26,8 @@ int main(void) {
     gcry_error_t err = 0;    
 
     /********************
-    *  m'/84'/0'/0'/0   *
-    *********************/
+     *  m'/84'/0'/0'/0   *
+     *********************/
 
     mnemonic_t *mnem = NULL;
     key_pair_t *child_keys = NULL;

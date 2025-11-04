@@ -28,13 +28,13 @@ int main(int argc, char **argv) {
     int32_t opts = 0;
     uint32_t opt_mask = 0;
     struct option options[] = {
-    {"create",  0, NULL, 'c'},
-    {"recover", 0, NULL, 'r'},
-    {"receive", 0, NULL, 'R'},
-    {"show",    1, NULL, 's'},
-    {"balance", 0, NULL, 'b'},
-    {"help",    0, NULL, 'h'},
-    {NULL, 0, NULL, 0}
+	{"create",  0, NULL, 'c'},
+	{"recover", 0, NULL, 'r'},
+	{"receive", 0, NULL, 'R'},
+	{"show",    1, NULL, 's'},
+	{"balance", 0, NULL, 'b'},
+	{"help",    0, NULL, 'h'},
+	{NULL, 0, NULL, 0}
     };
 
     while ( opts != -1) {
