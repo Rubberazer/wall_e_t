@@ -201,4 +201,4 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
     gcry_free(swap_address);
  allocerr1:
     return verif; 
-} 
+}
