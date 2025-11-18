@@ -28,105 +28,105 @@ int main(int argc, char **argv) {
     int32_t opts = 0;
     uint32_t opt_mask = 0;
     struct option options[] = {
-	{"create",  0, NULL, 'c'},
-	{"recover", 0, NULL, 'r'},
-	{"receive", 0, NULL, 'R'},
-	{"show",    1, NULL, 's'},
-	{"balance", 0, NULL, 'b'},
-	{"help",    0, NULL, 'h'},
-	{NULL, 0, NULL, 0}
+		{"create",  0, NULL, 'c'},
+		{"recover", 0, NULL, 'r'},
+		{"receive", 0, NULL, 'R'},
+		{"show",    1, NULL, 's'},
+		{"balance", 0, NULL, 'b'},
+		{"help",    0, NULL, 'h'},
+		{NULL, 0, NULL, 0}
     };
 
     while ( opts != -1) {
-	if ((argc < 2) || (argc > 4)) {
-	    print_usage();
-	    exit(err);
-	}
-	opts = getopt_long_only(argc, argv, "crRs:bh", options, NULL);
-	switch (opts) {
-	case 'c':
-	    opt_mask = 0x01;
-	    break;
-	case 'r':
-	    opt_mask = 0x02;
-	    break;
-	case 'R':
-	    opt_mask = 0x04;
-	    break;
-	case 's':
-	    if (!strcmp(argv[optind-1], "key")) {
-		opt_mask = 0x08;
+		if ((argc < 2) || (argc > 4)) {
+			print_usage();
+			exit(err);
+		}
+		opts = getopt_long_only(argc, argv, "crRs:bh", options, NULL);
+		switch (opts) {
+		case 'c':
+			opt_mask = 0x01;
+			break;
+		case 'r':
+			opt_mask = 0x02;
+			break;
+		case 'R':
+			opt_mask = 0x04;
+			break;
+		case 's':
+			if (!strcmp(argv[optind-1], "key")) {
+				opt_mask = 0x08;
+				break;
+			}
+			else if (!strcmp(argv[optind-1], "addresses")) {
+				opt_mask = 0x10;
+				break;
+			}
+			else if (!strcmp(argv[optind-1], "keys")) {
+				opt_mask = 0x11;
+				break;
+			}
+			else {
+				fprintf(stdout, "Wrong argument for -show\n");
+			}
+			break;
+		case 'b':
+			opt_mask = 0x12;
+			break;
+		case 'h': print_usage();
+			break;
+		default: print_usage();
+			break;
+		}
 		break;
-	    }
-	    else if (!strcmp(argv[optind-1], "addresses")) {
-		opt_mask = 0x10;
-		break;
-	    }
-	    else if (!strcmp(argv[optind-1], "keys")) {
-		opt_mask = 0x11;
-		break;
-	    }
-	    else {
-		fprintf(stdout, "Wrong argument for -show\n");
-	    }
-	    break;
-	case 'b':
-	    opt_mask = 0x12;
-	    break;
-	case 'h': print_usage();
-	    break;
-	default: print_usage();
-	    break;
-	}
-	break;
     }
 
     if (opt_mask == 0x01) {
-	err = create_wallet();
-	if (err) {
-	    fprintf(stderr, "Problem creating wallet, exiting\n");
-	    exit(err);
-	}
-	else {fprintf(stdout, "Wallet created successfully\n");}
+		err = create_wallet();
+		if (err) {
+			fprintf(stderr, "Problem creating wallet, exiting\n");
+			exit(err);
+		}
+		else {fprintf(stdout, "Wallet created successfully\n");}
     }
     if (opt_mask == 0x02) {
-	err = recover_wallet();
-	if (err) {
-	    fprintf(stderr, "Problem recovering wallet, exiting\n");
-	    exit(err);
-	}
-	else {fprintf(stdout, "Wallet recovered successfully\n");}
+		err = recover_wallet();
+		if (err) {
+			fprintf(stderr, "Problem recovering wallet, exiting\n");
+			exit(err);
+		}
+		else {fprintf(stdout, "Wallet recovered successfully\n");}
     }    
     if (opt_mask == 0x04) {
-	err = receive_coin();
-	if (err) {
-	    fprintf(stderr, "Problem generating new bitcoin address, exiting\n");
-	}
+		err = receive_coin();
+		if (err) {
+			fprintf(stderr, "Problem generating new bitcoin address, exiting\n");
+		}
     }    
     if (opt_mask == 0x08) {
-	err = show_key();
-	if (err) {
-	    fprintf(stderr, "Problem showing Account key, exiting\n");
-	}
+		err = show_key();
+		if (err) {
+			fprintf(stderr, "Problem showing Account key, exiting\n");
+		}
     }    
     if (opt_mask == 0x10) {
-	err = show_addresses();
-	if (err) {
-	    fprintf(stderr, "Problem showing addresses, exiting\n");
-	}
+		err = show_addresses();
+		if (err) {
+			fprintf(stderr, "Problem showing addresses, exiting\n");
+		}
     }    
     if (opt_mask == 0x11) {
-	err = show_keys();
-	if (err) {
-	    fprintf(stderr, "Problem showing keys&addresses, exiting\n");
-	}
+		err = show_keys();
+		if (err) {
+			fprintf(stderr, "Problem showing keys&addresses, exiting\n");
+		}
     }    
     
     if (opt_mask == 0x12) {
-	err = wallet_balances();
-	if (err) {
-	    fprintf(stderr, "Problem showing balances, exiting\n");
-	}
+		err = wallet_balances();
+		if (err) {
+			fprintf(stderr, "Problem showing balances, exiting\n");
+		}
     }    
     
     exit(err);	
