@@ -28,8 +28,8 @@ int main(int arg, char *arv[]) {
 
     passwd = (char *)gcry_calloc_secure(66, sizeof(char));
     if (passwd == NULL) {
-	err = -1;
-	goto allocerr1;
+		err = -1;
+		goto allocerr1;
     }
 	
     getpasswd(passwd, password);

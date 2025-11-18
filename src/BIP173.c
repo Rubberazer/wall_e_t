@@ -106,8 +106,8 @@ uint32_t polymod(uint8_t *intermediate_address, size_t uint8_length) {
 void expand_hrp(const char *hrp, uint8_t *hrp_uint8) {
     for (size_t i = 0; i < strlen(hrp); ++i) {
         uint8_t c = hrp[i];
-	hrp_uint8[i] = c >> 5;
-	hrp_uint8[i+strlen(hrp)+1] = c & 0x1f;
+		hrp_uint8[i] = c >> 5;
+		hrp_uint8[i+strlen(hrp)+1] = c & 0x1f;
     }
     hrp_uint8[strlen(hrp)] = 0;
 }
@@ -117,27 +117,27 @@ gcry_error_t create_checksum(const char *hrp, uint8_t *intermediate_address, siz
     uint8_t *swap_address = NULL;
 
     if (strcmp(hrp, "bc")) {
-	fprintf(stderr, "const char *hrp only accepted value is: \"bc\"\n");
-	err = gcry_error_from_errno(EINVAL);
-	return err;
+		fprintf(stderr, "const char *hrp only accepted value is: \"bc\"\n");
+		err = gcry_error_from_errno(EINVAL);
+		return err;
     }
     if (bech_type != bech32) {
-	fprintf(stderr, "encoding *bech_type only accepted value is: bech32\n");
-	err = gcry_error_from_errno(EINVAL);
-	return err;
+		fprintf(stderr, "encoding *bech_type only accepted value is: bech32\n");
+		err = gcry_error_from_errno(EINVAL);
+		return err;
     }	
 	
     swap_address = (uint8_t *)gcry_calloc_secure(interm_length+(strlen(hrp)*2+1), sizeof(uint8_t));
     if (swap_address == NULL) {
-	err = gcry_error_from_errno(ENOMEM);
-	goto allocerr1;
+		err = gcry_error_from_errno(ENOMEM);
+		goto allocerr1;
     }
 	
     expand_hrp(hrp, swap_address);
     memcpy(swap_address+(strlen(hrp)*2+1), intermediate_address, interm_length);
     uint32_t mod = polymod(swap_address, interm_length+(strlen(hrp)*2+1)) ^ bech_type;
     for (size_t i = 0; i < 6; ++i) {        
-	checksum[i] = (mod >> (5 * (5 - i))) & 31;
+		checksum[i] = (mod >> (5 * (5 - i))) & 31;
     }
     
     gcry_free(swap_address);
@@ -154,18 +154,18 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
     
     swap_address = (uint8_t *)gcry_calloc_secure((strlen(hrp)*2+1)+strlen(bech_address)-(strlen(hrp)+1), sizeof(uint8_t));
     if (swap_address == NULL) {
-	fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
-	goto allocerr1;
+		fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
+		goto allocerr1;
     }
     swap_hrp = (uint8_t *)gcry_calloc_secure((strlen(hrp)*2+1), sizeof(uint8_t));
     if (swap_hrp == NULL) {
-	fprintf(stderr, "Problem allocating memory for hrp uint8 array\n");
-	goto allocerr2;
+		fprintf(stderr, "Problem allocating memory for hrp uint8 array\n");
+		goto allocerr2;
     } 
     interm_address = (uint8_t *)gcry_calloc_secure(strlen(bech_address)-(strlen(hrp)+1), sizeof(uint8_t));
     if (interm_address == NULL) {
-	fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
-	goto allocerr3;
+		fprintf(stderr, "Problem allocating memory for swap uint8 array\n");
+		goto allocerr3;
     }
 
     // PolyMod computes what value to xor into the final values to make the checksum 0. However, */
@@ -174,9 +174,9 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
     // resulting checksum to be 1 instead. In Bech32m, this constant was amended. */    
 
     for (size_t i = 3, j = 0; i < strlen(bech_address); i++, j++) {
-	char bech_string[] = BECH32;
-	char *position = strchr(bech_string, bech_address[i]);
-	interm_address[j] = (uint8_t)(position-bech_string);;
+		char bech_string[] = BECH32;
+		char *position = strchr(bech_string, bech_address[i]);
+		interm_address[j] = (uint8_t)(position-bech_string);;
     }
             
     expand_hrp(hrp, swap_hrp);
@@ -185,13 +185,13 @@ encoding verify_checksum(const char *hrp, char *bech_address) {
     uint32_t check = polymod(swap_address, (strlen(hrp)*2+1)+strlen(bech_address)-(strlen(hrp)+1));
        
     if (check == 1) {
-	verif = bech32;
+		verif = bech32;
     }
     else if (check == 0x2bc830a3) {
-	verif = bech32m;
+		verif = bech32m;
     }
     else {
-	verif = invalid;
+		verif = invalid;
     }
 			     
     gcry_free(interm_address);

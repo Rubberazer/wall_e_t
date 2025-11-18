@@ -25,16 +25,16 @@ int main() {
     ssize_t error = 0;
     error = address_balance("bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv");
     if (error < 0) {
-	fprintf(stderr, "Problem getting balance for address\n");
-	exit(error);
+		fprintf(stderr, "Problem getting balance for address\n");
+		exit(error);
     }
     printf("Satoshis: %ld\n", error);
 
 
     error = address_utxo_n("bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv"); 
     if (error < 0) {
-	fprintf(stderr, "Problem getting number of utxos for address\n");
-	exit(error);
+		fprintf(stderr, "Problem getting number of utxos for address\n");
+		exit(error);
     }
 
     uint32_t count_utxos = error;
@@ -43,15 +43,15 @@ int main() {
     
     error = address_utxo(unspent, count_utxos, "bc1q40thsjx4k84gdmx2aynwqygmxwxpnsrjzzs4jv");
     if (error < 0) {
-	fprintf(stderr, "Problem getting utxos for address\n");
-	exit(error);
+		fprintf(stderr, "Problem getting utxos for address\n");
+		exit(error);
     }
     
     for (uint32_t i = 0; i < count_utxos; i++) { 
-	for (uint32_t j = 0; j < 32; j++) {
-	    printf("%02x", unspent[i].txid[j]);
-	}
-	printf("\tVout: %u\n", unspent[i].vout); 
+		for (uint32_t j = 0; j < 32; j++) {
+			printf("%02x", unspent[i].txid[j]);
+		}
+		printf("\tVout: %u\n", unspent[i].vout); 
     }
     error = 0;
     

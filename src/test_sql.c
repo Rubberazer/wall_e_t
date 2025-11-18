@@ -34,14 +34,14 @@ int main(int arg, char *arv[]) {
     
     err = create_wallet_db("wallet");
     if (err) {
-	fprintf(stderr, "Problem creating database file, exiting\n");
+		fprintf(stderr, "Problem creating database file, exiting\n");
     }
 
     error = char_to_uint8("a2c20798f8631fcaca9b4c364111b2651fa7966ced524f474e9eeed9a82b6c74", keys[0].key_priv, 64);
     if (error) {
-	fprintf(stderr, "Problem converting char to uint8\n");
-	err = -1;
-	return err;
+		fprintf(stderr, "Problem converting char to uint8\n");
+		err = -1;
+		return err;
     }
     memset(keys[0].key_priv_chain, 0x11, 64);
     
@@ -49,19 +49,19 @@ int main(int arg, char *arv[]) {
     query_insert.value_size = 1000;
     err = encrypt_AES256(query_insert.value, (uint8_t *)(&keys[0]), sizeof(key_pair_t), password);
     if (err) {
-	printf("Problem encrypting message, error code:%d", err);
+		printf("Problem encrypting message, error code:%d", err);
     }
     
     err = insert_key(&query_insert, 1, "wallet", "root", "keys");
     if (err < 0) {
-	fprintf(stderr, "Problem inserting into  database, exiting\n");
-	exit(err);
+		fprintf(stderr, "Problem inserting into  database, exiting\n");
+		exit(err);
     }
     
     err = query_count("wallet", "root", "keys", "");
     if (err < 0) {
-	fprintf(stderr, "Problem querying database, exiting\n");
-	exit(err);
+		fprintf(stderr, "Problem querying database, exiting\n");
+		exit(err);
     }
     count = err;
     printf("Number of rows returned: %u\n", count);
@@ -70,8 +70,8 @@ int main(int arg, char *arv[]) {
     
     err = read_key(query_return, "wallet", "root", "keys", "");
     if (err < 0) {
-	fprintf(stderr, "Problem querying database, exiting\n");
-	exit(err);
+		fprintf(stderr, "Problem querying database, exiting\n");
+		exit(err);
     }
 
     memset(keys[1].key_priv, 0, 32);
@@ -82,21 +82,21 @@ int main(int arg, char *arv[]) {
     
     err = decrypt_AES256((uint8_t *)(&keys[1]), query_return[0].value, s_in_length, "abc&we45dsad./");
     if (err) {
-	printf("Problem decrypting message, error code:%d", err);
+		printf("Problem decrypting message, error code:%d", err);
     }
 
     uint8_t verifier[64] = {0};
     memset(verifier, 0x11, 64);
     
     if (memcmp(keys[1].key_priv_chain, verifier, 64)) {
-	fprintf(stdout, "Incorrect password\n");
-	err = -1;
-	return err;
+		fprintf(stdout, "Incorrect password\n");
+		err = -1;
+		return err;
     }
 
     printf("\nDecrypted key: \n");
     for (uint32_t i = 0; i < 32; i++) {
-	printf("%02x", keys[1].key_priv[i]);
+		printf("%02x", keys[1].key_priv[i]);
     }
     printf("\n");
 
@@ -107,14 +107,14 @@ int main(int arg, char *arv[]) {
     
     err = insert_key(&insert_address, 1, "wallet", "receive", "address");
     if (err < 0) {
-	fprintf(stderr, "Problem inserting address into database, exiting\n");
-	exit(err);
+		fprintf(stderr, "Problem inserting address into database, exiting\n");
+		exit(err);
     }
     
     err = read_key(&recover_address, "wallet", "receive", "address", "WHERE id=0");
     if (err < 0) {
-	fprintf(stderr, "Problem querying database, exiting\n");
-	exit(err);
+		fprintf(stderr, "Problem querying database, exiting\n");
+		exit(err);
     }
     
     char bitcoin_adress_rec[100] = {0};

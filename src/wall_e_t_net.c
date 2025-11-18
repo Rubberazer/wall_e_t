@@ -32,7 +32,7 @@ static size_t cb(char *data, size_t size, size_t nmemb, void *clientp) {
  
     char *ptr = realloc(mem->response, mem->size + realsize + 1);
     if(!ptr)
-	return 0;  /* out of memory */
+		return 0;  /* out of memory */
  
     mem->response = ptr;
     memcpy(&(mem->response[mem->size]), data, realsize);
@@ -53,9 +53,9 @@ ssize_t address_balance(char * bitcoin_address) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if(!curl) {
-	fprintf(stderr, "Request for balance via web failed\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Request for balance via web failed\n");
+		error = -1;
+		return error;
     }
     
     curl_easy_setopt(curl, CURLOPT_URL, url_api);
@@ -68,9 +68,9 @@ ssize_t address_balance(char * bitcoin_address) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
-	fprintf(stderr, "Request for balance via web failed\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Request for balance via web failed\n");
+		error = -1;
+		return error;
     }
 
     char swap_string[chunk.size];
@@ -104,9 +104,9 @@ ssize_t address_utxo_n(char * bitcoin_address) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if(!curl) {
-	fprintf(stderr, "Request for unspent output via web failed\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Request for unspent output via web failed\n");
+		error = -1;
+		return error;
     }
     
     curl_easy_setopt(curl, CURLOPT_URL, url_api);
@@ -114,9 +114,9 @@ ssize_t address_utxo_n(char * bitcoin_address) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
-	fprintf(stderr, "Request for unspent via web failed\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Request for unspent via web failed\n");
+		error = -1;
+		return error;
     }
 
     char *pos = NULL;
@@ -125,8 +125,8 @@ ssize_t address_utxo_n(char * bitcoin_address) {
 
     pos = chunk.response;
     while ((pos = strstr(pos, token))) {
-	count++;
-	pos++;
+		count++;
+		pos++;
     }
     error = count;
     
@@ -148,9 +148,9 @@ ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_addr
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if(!curl) {
-	fprintf(stderr, "Request for unspent output via web failed\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Request for unspent output via web failed\n");
+		error = -1;
+		return error;
     }
     
     curl_easy_setopt(curl, CURLOPT_URL, url_api);
@@ -158,9 +158,9 @@ ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_addr
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     res = curl_easy_perform(curl);
     if(res != CURLE_OK) {
-	fprintf(stderr, "Request for unspent via web failed\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Request for unspent via web failed\n");
+		error = -1;
+		return error;
     }
 
     char swap_string[chunk.size];
@@ -171,24 +171,24 @@ ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_addr
 
     pos = chunk.response;
     while ((pos = strstr(pos, token))) {
-	count++;
-	pos++;
+		count++;
+		pos++;
     }
     if (count > unspent_length) {
-	fprintf(stderr, "Size of array reserved for unspent too small\n");
-	error = -1;
-	return error;
+		fprintf(stderr, "Size of array reserved for unspent too small\n");
+		error = -1;
+		return error;
     }
     
     pos  = NULL;
     strcpy(swap_string, chunk.response);
     pos = swap_string;
     for (size_t i = 0; i < count; i++) {
-	pos = strstr(pos, token);
-	pos += strlen(token);
-	strcpy(swap_string, pos);
-	position = strcspn(swap_string, "\"");
-	char_to_uint8(swap_string, (uint8_t *)&unspent[i].txid, position);
+		pos = strstr(pos, token);
+		pos += strlen(token);
+		strcpy(swap_string, pos);
+		position = strcspn(swap_string, "\"");
+		char_to_uint8(swap_string, (uint8_t *)&unspent[i].txid, position);
     }
 
     token = "\"tx_output_n\":";
@@ -197,13 +197,13 @@ ssize_t address_utxo(utxo_t *unspent, size_t unspent_length, char * bitcoin_addr
     strcpy(swap_string, chunk.response);
     pos = swap_string;
     for (size_t i = 0; i < count; i++) {
-	pos = strstr(pos, token);
-	pos += strlen(token);
-	strcpy(swap_string, pos);
-	position = strcspn(swap_string, ",");
-	strncpy(swap_number, swap_string, position);
-	unspent[i].vout = atoi(swap_number);
-	memset(swap_number, 0, 100*sizeof(char));
+		pos = strstr(pos, token);
+		pos += strlen(token);
+		strcpy(swap_string, pos);
+		position = strcspn(swap_string, ",");
+		strncpy(swap_number, swap_string, position);
+		unspent[i].vout = atoi(swap_number);
+		memset(swap_number, 0, 100*sizeof(char));
     }
     error = count;
     
